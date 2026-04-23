@@ -8,3 +8,30 @@ POST http://localhost:8080/chat-with-stream
 Accept: application/stream+json
 
 What is ollama?
+
+###
+
+POST http://localhost:8080/chat-with-parametrized-prompt
+Accept: application/stream+json
+
+LLM
+
+###
+
+POST http://localhost:8080/chat-with-roles-and-external-template
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+    "userPromptText": "How to start Spring container?"
+}
+
+###
+
+POST http://localhost:8080/chat-with-roles-and-external-template
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "What is a banana?"
+}
