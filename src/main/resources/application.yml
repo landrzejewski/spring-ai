@@ -9,7 +9,7 @@ spring:
         pull-model-strategy: when_missing
         max-retries: 3
     openai:
-      api-key: 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
+      api-key:
       chat:
         options:
           model: gpt-4.1

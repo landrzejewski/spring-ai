@@ -1,6 +1,7 @@
 package pl.training.springai.chat;
 
 import org.springframework.ai.audio.transcription.AudioTranscriptionPrompt;
+import org.springframework.ai.audio.tts.TextToSpeechModel;
 import org.springframework.ai.audio.tts.TextToSpeechPrompt;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -23,7 +24,7 @@ import pl.training.springai.chat.model.PromptRequest;
 @RestController
 public class AudioController {
 
-    private final OpenAiAudioSpeechModel audioSpeechModel; //TextToSpeechModel
+    private final TextToSpeechModel audioSpeechModel; //TextToSpeechModel
     private final OpenAiAudioTranscriptionModel audioTranscriptionModel; // TranscriptionModel
 
     public AudioController(OpenAiAudioSpeechModel audioSpeechModel, OpenAiAudioTranscriptionModel audioTranscriptionModel) {
