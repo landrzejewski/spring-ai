@@ -9,7 +9,7 @@ spring:
         pull-model-strategy: when_missing
         max-retries: 3
     openai:
-      api-key:
+      api-key: ${OPENAI_KEY}
       chat:
         options:
           model: gpt-4.1
