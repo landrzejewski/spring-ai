@@ -183,8 +183,3 @@ Content-Type: application/json
 
 POST http://localhost:8080/generate-transcription
 Accept: application/json
-
-###
-
-POST http://localhost:8080/generate-audi
-Accept: application/json
