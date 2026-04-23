@@ -169,3 +169,22 @@ Content-Type: application/json
 {
   "userPromptText": "Calculate 2 to the power od 2"
 }
+
+###
+
+POST http://localhost:8080/generate-speech
+Content-Type: application/json
+
+{
+  "userPromptText": "Spring AI is great"
+}
+
+###
+
+POST http://localhost:8080/generate-transcription
+Accept: application/json
+
+###
+
+POST http://localhost:8080/generate-audi
+Accept: application/json
