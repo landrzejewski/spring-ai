@@ -1,0 +1,10 @@
+POST http://localhost:8080/chat
+
+What is ollama?
+
+###
+
+POST http://localhost:8080/chat-with-stream
+Accept: application/stream+json
+
+What is ollama?

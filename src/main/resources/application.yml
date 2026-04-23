@@ -1,0 +1,15 @@
+spring:
+  ai:
+    ollama:
+      chat:
+        model: qwen3.5:0.8b
+        #options:
+        #  max-tokens: 1_000
+      init:
+        pull-model-strategy: when_missing
+        max-retries: 3
+    openai:
+      api-key: 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
+      chat:
+        options:
+          model: gpt-4.1
