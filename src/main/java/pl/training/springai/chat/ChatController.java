@@ -9,13 +9,18 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.converter.MapOutputConverter;
+import org.springframework.ai.support.ToolCallbacks;
+import org.springframework.ai.tool.function.FunctionToolCallback;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.*;
 import pl.training.springai.chat.advisor.TimestampAdvisor;
 import pl.training.springai.chat.model.Book;
+import pl.training.springai.chat.model.DoubleValue;
 import pl.training.springai.chat.model.PromptRequest;
+import pl.training.springai.chat.tool.DateTimeTool;
+import pl.training.springai.chat.tool.PowerTool;
 import reactor.core.publisher.Flux;
 
 import java.util.*;
@@ -217,6 +222,24 @@ public class ChatController {
     @DeleteMapping("delete-chat-history/{conversationId}")
     public void deleteChatHistory(@PathVariable String conversationId) {
         chatMemory.clear(conversationId);
+    }
+
+    @PostMapping("chat-with-tools")
+    public Flux<String> chatWithTools(@RequestBody PromptRequest promptRequest) {
+        var mathTools = FunctionToolCallback.builder("power", new PowerTool())
+                // .description("Calculates the square of a number (value * value)")
+                .inputType(DoubleValue.class)
+                .build();
+        var callbacks = ToolCallbacks.from(new DateTimeTool());
+        return chatClient
+                .prompt()
+                .toolCallbacks(callbacks)
+                .toolCallbacks(mathTools)
+                //.toolNames(beanName)
+                .toolContext(Map.of("userId", "1234"))
+                .user(promptRequest.userPromptText())
+                .stream()
+                .content();
     }
 
 }

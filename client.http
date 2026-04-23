@@ -142,3 +142,30 @@ Content-Type: application/json
 
 ###
 
+POST http://localhost:8080/chat-with-tools
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "What time is it now?"
+}
+
+###
+
+POST http://localhost:8080/chat-with-tools
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "Podaj aktualną godzinę w Warszawie?"
+}
+
+###
+
+POST http://localhost:8080/chat-with-tools
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "Calculate 2 to the power od 2"
+}

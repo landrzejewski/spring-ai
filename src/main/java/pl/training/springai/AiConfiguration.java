@@ -48,6 +48,8 @@ public class AiConfiguration {
                         MessageChatMemoryAdvisor.builder(chatMemory).build()
                         // PromptChatMemoryAdvisor.builder(chatMemory).build()
                 )
+                // .defaultToolCallbacks()
+                // .defaultOptions()
                 .build();
     }
 

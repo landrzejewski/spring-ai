@@ -22,3 +22,7 @@ spring:
   sql:
     init:
       mode: always
+
+logging:
+  level:
+    pl.training.ai.chat.advisor: DEBUG
