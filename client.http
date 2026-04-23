@@ -35,3 +35,75 @@ Content-Type: application/json
 {
   "userPromptText": "What is a banana?"
 }
+
+###
+
+POST http://localhost:8080/chat-extracting-data
+Accept: application/json
+Content-Type: application/json
+
+{
+  "userPromptText": "Extract the key information from the following text delimited by triple backticks and format it in JSON.\n Text : ```Emily Thompson booked a flight on October 10, 2024. She will be flying from New York (JFK) to Los Angeles (LAX) on flight number AA123.The departure time is 8:00 AM, and the arrival time is 11:30 AM. She has a carry-on bag and a checked bag. Her ticket price was $450.00, and she will be seated in 14A.```"
+}
+
+####
+
+POST http://localhost:8080/chat-extracting-structured-data
+Accept: application/json
+Content-Type: application/json
+
+{
+  "userPromptText": "Give me information about the best fantasy book"
+}
+
+###
+
+POST http://localhost:8080/chat-extracting-structured-data-as-list
+Accept: application/json
+Content-Type: application/json
+
+{
+  "userPromptText": "Give me information about five the best fantasy book"
+}
+
+###
+
+POST http://localhost:8080/chat-extracting-structured-data-as-map
+Accept: application/json
+Content-Type: application/json
+
+{
+  "userPromptText": "Give me information about the best fantasy books (title and author)"
+}
+
+###
+
+POST http://localhost:8080/chat-with-conversation
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "My name is Luc"
+}
+
+###
+
+POST http://localhost:8080/chat-with-conversation
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "What is my name?"
+}
+
+###
+
+POST http://localhost:8080/chat-with-advisors
+Accept: application/json
+Content-Type: application/json
+
+{
+  "userPromptText": "What is my name?"
+}
+
+
