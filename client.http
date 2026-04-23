@@ -106,4 +106,39 @@ Content-Type: application/json
   "userPromptText": "What is my name?"
 }
 
+###
+
+###
+
+POST http://localhost:8080/chat-with-conversation/id-1
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "My name is Luc"
+}
+
+###
+
+POST http://localhost:8080/chat-with-conversation/id-1
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "What is my name?"
+}
+
+###
+
+GET http://localhost:8080/get-chat-history/id-1
+Accept: application/stream+json
+Content-Type: application/json
+
+###
+
+DELETE http://localhost:8080/delete-chat-history/id-1
+Accept: application/stream+json
+Content-Type: application/json
+
+###
 

@@ -1,7 +1,7 @@
 package pl.training.springai.chat;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.ChatOptions;
@@ -12,10 +12,7 @@ import org.springframework.ai.converter.MapOutputConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.training.springai.chat.advisor.TimestampAdvisor;
 import pl.training.springai.chat.model.Book;
 import pl.training.springai.chat.model.PromptRequest;
@@ -28,9 +25,11 @@ import java.util.stream.Collectors;
 public class ChatController {
 
     private final ChatClient chatClient;
+    private final ChatMemory chatMemory;
 
-    public ChatController(ChatClient chatClient) {
+    public ChatController(ChatClient chatClient, ChatMemory chatMemory) {
         this.chatClient = chatClient;
+        this.chatMemory = chatMemory;
     }
 
     @PostMapping("chat")
@@ -189,6 +188,35 @@ public class ChatController {
                 )
                 .call()
                 .content();
+    }
+
+    @PostMapping("chat-with-conversation/{conversationId}")
+    public Flux<String> chatWithConversationId(
+            @RequestBody PromptRequest promptRequest,
+            @PathVariable String conversationId) {
+        return chatClient.prompt()
+                .user(promptRequest.userPromptText())
+                .advisors(spec -> spec
+                        .param(ChatMemory.CONVERSATION_ID, conversationId)
+                )
+                .stream()
+                .content();
+    }
+
+    @GetMapping("get-chat-history/{conversationId}")
+    public List<Map<String, String>> getChatHistory(@PathVariable String conversationId) {
+        return chatMemory.get(conversationId)
+                .stream()
+                .map(message -> Map.of(
+                        "role", message.getMessageType().name(),
+                        "text", message.getText()
+                ))
+                .toList();
+    }
+
+    @DeleteMapping("delete-chat-history/{conversationId}")
+    public void deleteChatHistory(@PathVariable String conversationId) {
+        chatMemory.clear(conversationId);
     }
 
 }
