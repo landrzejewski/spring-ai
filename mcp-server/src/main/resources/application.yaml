@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: mcp-server
+  main:
+    banner-mode: off
+  ai:
+    mcp:
+      server:
+        name: time-server
+        version: 1.0.0
+        type: sync
+logging:
+  pattern:
+    console:

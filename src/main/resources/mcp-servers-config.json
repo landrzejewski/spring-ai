@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "time-server": {
+      "command": "java",
+      "args": [
+        "-jar",
+        "./mcp-server/target/time-server.jar"
+      ],
+      "env": {
+      }
+    }
+  }
+}

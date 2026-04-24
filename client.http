@@ -242,3 +242,38 @@ Content-Type: application/json
 {
   "userPromptText": "Compare those books"
 }
+
+###
+
+###
+POST http://localhost:8080/zero-shot
+Content-Type: application/json
+
+{
+  "userPromptText": "The item arrived on schedule, but it was broken and didn’t function properly. What is the sentiment of this sentence?"
+}
+
+###
+POST http://localhost:8080/few-shot
+Content-Type: application/json
+
+{
+  "userPromptText": "The item arrived on schedule, but it was broken and didn’t function properly. What is the sentiment of this sentence?"
+}
+
+###
+POST http://localhost:8080/multi-step
+Content-Type: application/json
+
+{
+  "userPromptText": "At a summer art camp, each of the 15 young artists receives 3 paintbrushes to use for their projects. The brushes are neatly organized by the instructors before the first day of camp. The instructors want to make sure they’ve prepared enough paintbrushes for everyone. How many paintbrushes are there in total for all the students?"
+}
+
+###
+
+POST http://localhost:8080/mcp-client
+Content-Type: application/json
+
+{
+  "userPromptText": "get current time, return only date without any additional info"
+}
