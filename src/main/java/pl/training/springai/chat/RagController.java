@@ -1,15 +1,18 @@
 package pl.training.springai.chat;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.document.Document;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
 import org.springframework.ai.rag.preretrieval.query.expansion.MultiQueryExpander;
 import org.springframework.ai.rag.preretrieval.query.transformation.RewriteQueryTransformer;
 import org.springframework.ai.rag.preretrieval.query.transformation.TranslationQueryTransformer;
 import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.VectorStoreRetriever;
+import org.springframework.ai.vectorstore.filter.FilterExpressionTextParser;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import pl.training.springai.AiConfiguration;
 import pl.training.springai.chat.model.PromptRequest;
 import reactor.core.publisher.Flux;
+
+import java.util.stream.Collectors;
 
 @RestController
 public class RagController {
@@ -122,5 +127,61 @@ public class RagController {
                 .stream()
                 .content();
     }
+
+    @PostMapping("rag-filter-by-metadata")
+    public Flux<String> ragFilterByMetadata(@RequestBody PromptRequest promptRequest,
+                                            @RequestParam(required = false) String genre,
+                                            @RequestParam(required = false) Integer year,
+                                            @RequestParam(required = false) String author
+    ) {
+        var filterExpression = buildFilterExpression(genre, year, author);
+        var searchRequestBuilder = SearchRequest.builder()
+                .query(promptRequest.userPromptText())
+                .topK(DEFAULT_TOP_K)
+                .similarityThreshold(DEFAULT_SIMILARITY_THRESHOLD);
+        if (filterExpression != null) {
+            var expression = new FilterExpressionTextParser().parse(filterExpression);
+            searchRequestBuilder.filterExpression(expression);
+        }
+        var documents = pgVectorStore.similaritySearch(searchRequestBuilder.build());
+        // documents.get(0).getMetadata();
+        var context = documents.stream()
+                .map(Document::getFormattedContent)
+                .collect(Collectors.joining());
+
+        var systemMessage = """
+              Odpowiadaj na pytania na podstawie podanego kontekstu.
+              Jesli kontekst jest pusty lub nie zawiera odpowiedzi, powiedz ze nie masz informacji.
+               
+              KONTEKST:
+              %s
+               """.formatted(context);
+
+        return ChatClient.builder(chatModel).build()
+                .prompt()
+                .user(promptRequest.userPromptText())
+                .system(systemMessage)
+                .stream()
+                .content();
+    }
+
+    private String buildFilterExpression(String genre, Integer year, String author) {
+        var expr = new StringBuilder();
+
+        if (genre != null) {
+            expr.append(String.format("genre == '%s'", genre));
+        }
+        if (year != null) {
+            if (!expr.isEmpty()) expr.append(" && ");
+            expr.append(String.format("year >= %d", year));
+        }
+        if (author != null) {
+            if (!expr.isEmpty()) expr.append(" && ");
+            expr.append(String.format("author == '%s'", author));
+        }
+
+        return expr.isEmpty() ? null : expr.toString();
+    }
+
 
 }

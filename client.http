@@ -231,5 +231,15 @@ POST http://localhost:8080/rag-rewrite-query?storeType=pg
 Content-Type: application/json
 
 {
-  "userPromptText": "What books about DevOps do you recommend?"
+  "userPromptText": "Jaką książkę możesz polecić w temacie DevOps?"
+}
+
+###
+
+###
+POST http://localhost:8080/rag-filter-by-metadata?year=2015&genre=Programming
+Content-Type: application/json
+
+{
+  "userPromptText": "Compare those books"
 }
