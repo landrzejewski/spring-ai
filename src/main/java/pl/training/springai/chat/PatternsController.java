@@ -211,23 +211,6 @@ public class PatternsController {
                 .content();
     }
 
-    /**
-     * SafetyAdvisor - ocena bezpieczenstwa zapytania przez model Bielik (Ollama).
-     *
-     * Dzialanie:
-     * 1. Advisor wysyla tresc do modelu Bielik z promptem klasyfikujacym
-     * 2. Bielik ocenia kategorie: HATE, VULGAR, SEX, CRIME, SELF_HARM
-     * 3. Jesli niebezpieczna - blokuje zapytanie
-     * 4. Jesli bezpieczna - przekazuje do OpenAI
-     */
-    @PostMapping("safety")
-    public String safetyChat(@RequestBody PromptRequest request) {
-        return safetyClient.prompt()
-                .user(request.userPromptText())
-                .call()
-                .content();
-    }
-
     // ========================================================================
     // 4. MODERATION - OpenAI Moderation API
     // ========================================================================
@@ -249,4 +232,24 @@ public class PatternsController {
                 .call()
                 .content();
     }
+
+    /**
+     * SafetyAdvisor - ocena bezpieczenstwa zapytania przez model Bielik (Ollama).
+     *
+     * Dzialanie:
+     * 1. Advisor wysyla tresc do modelu Bielik z promptem klasyfikujacym
+     * 2. Bielik ocenia kategorie: HATE, VULGAR, SEX, CRIME, SELF_HARM
+     * 3. Jesli niebezpieczna - blokuje zapytanie
+     * 4. Jesli bezpieczna - przekazuje do OpenAI
+     */
+    @PostMapping("safety")
+    public String safetyChat(@RequestBody PromptRequest request) {
+        return safetyClient.prompt()
+                .user(request.userPromptText())
+                .call()
+                .content();
+    }
+
+
 }
+

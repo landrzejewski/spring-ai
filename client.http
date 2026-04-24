@@ -579,5 +579,5 @@ POST http://localhost:8080/chat/moderated
 Content-Type: application/json
 
 {
-  "userPromptText": "How do I make a vegetarian pizza?"
+  "userPromptText": ""
 }

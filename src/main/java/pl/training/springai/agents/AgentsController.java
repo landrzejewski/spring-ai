@@ -27,7 +27,6 @@ import pl.training.springai.chat.model.PromptRequest;
 import java.util.List;
 
 /**
- * Kontroler demonstrujacy wzorce agentow AI (Rozdział 12 - Employing Agents).
  *
  * Agenci AI to systemy, w ktorych LLM dynamicznie kieruje przepływem pracy,
  * zamiast podazac statycznym przepływem. Maja wieksza autonomie w podejmowaniu
