@@ -16,5 +16,6 @@ https://www.manning.com/books/build-a-reasoning-model-from-scratch
 https://www.manning.com/books/the-rlhf-book
 
 ###
+
 Załaduj 20–30 przepisów jako dokumenty. Użytkownik wpisuje co ma w lodówce (np. „kurczak, ryż, papryka"),
 a RAG zwraca pasujące przepisy z instrukcją przygotowania. 
