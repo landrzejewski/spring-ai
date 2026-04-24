@@ -195,8 +195,6 @@ Content-Type: application/json
 
 ###
 
-###
-
 POST http://localhost:8080/generate-description
 Content-Type: application/json
 
@@ -204,5 +202,34 @@ Content-Type: application/json
   "userPromptText": "Can you explain what you see in the following image"
 }
 
+###
+
+POST http://localhost:8080/init-pgvector
+
+###
+
+POST http://localhost:8080/basic-rag-query?storeType=pg
+Content-Type: application/json
+
+{
+  "userPromptText": "What books about microservices do you recommend?"
+}
+
+###
+
+POST http://localhost:8080/rag-query-expander?storeType=pg
+Content-Type: application/json
+
+{
+  "userPromptText": "What books about DevOps do you recommend?"
+}
+
+###
 
 
+POST http://localhost:8080/rag-rewrite-query?storeType=pg
+Content-Type: application/json
+
+{
+  "userPromptText": "What books about DevOps do you recommend?"
+}

@@ -1,0 +1,58 @@
+[
+  {
+    "title": "Clean Code",
+    "author": "Robert C. Martin",
+    "genre": "Programming",
+    "year": 2008,
+    "description": "A handbook of agile software craftsmanship. Covers principles, patterns, and practices of writing clean code. Explains how to write code that is easy to read, understand, and maintain. Essential reading for any software developer who wants to improve their coding skills."
+  },
+  {
+    "title": "Design Patterns: Elements of Reusable Object-Oriented Software",
+    "author": "Gang of Four",
+    "genre": "Programming",
+    "year": 1994,
+    "description": "The classic book on software design patterns. Describes 23 design patterns that solve common software design problems. Covers creational, structural, and behavioral patterns. A foundational text for object-oriented programming."
+  },
+  {
+    "title": "The Pragmatic Programmer",
+    "author": "David Thomas, Andrew Hunt",
+    "genre": "Programming",
+    "year": 2019,
+    "description": "A guide to becoming a better programmer. Covers topics from personal responsibility and career development to architectural techniques. Includes practical advice on tools, automation, and coding practices. Updated 20th anniversary edition."
+  },
+  {
+    "title": "Effective Java",
+    "author": "Joshua Bloch",
+    "genre": "Programming",
+    "year": 2018,
+    "description": "Best practices for the Java platform. Contains 90 items covering creating and destroying objects, methods common to all objects, classes and interfaces, generics, enums, lambdas, and streams. Third edition covers Java 9."
+  },
+  {
+    "title": "Domain-Driven Design",
+    "author": "Eric Evans",
+    "genre": "Architecture",
+    "year": 2003,
+    "description": "Tackling complexity in the heart of software. Introduces strategic and tactical patterns for building domain models. Covers bounded contexts, ubiquitous language, aggregates, and repositories. Essential for building complex business applications."
+  },
+  {
+    "title": "Building Microservices",
+    "author": "Sam Newman",
+    "genre": "Architecture",
+    "year": 2021,
+    "description": "Designing fine-grained systems. Covers microservice architecture patterns, deployment, testing, and monitoring. Discusses service decomposition, communication patterns, and data management. Second edition with updated best practices."
+  },
+  {
+    "title": "The Phoenix Project",
+    "author": "Gene Kim",
+    "genre": "DevOps",
+    "year": 2013,
+    "description": "A novel about IT, DevOps, and helping your business win. Follows an IT manager tasked with saving a critical project. Introduces the Three Ways of DevOps through storytelling. Makes complex DevOps concepts accessible."
+  },
+  {
+    "title": "Accelerate",
+    "author": "Nicole Forsgren, Jez Humble, Gene Kim",
+    "genre": "DevOps",
+    "year": 2018,
+    "description": "The science of lean software and DevOps. Based on four years of research with thousands of teams. Identifies key capabilities that drive software delivery performance. Provides evidence-based guidance for improving technology organizations."
+  }
+]
