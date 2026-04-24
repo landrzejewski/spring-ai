@@ -183,3 +183,26 @@ Content-Type: application/json
 
 POST http://localhost:8080/generate-transcription
 Accept: application/json
+
+###
+
+POST http://localhost:8080/generate-image
+Content-Type: application/json
+
+{
+  "userPromptText": "A futuristic city with flying cars and neon lights, cyberpunk style"
+}
+
+###
+
+###
+
+POST http://localhost:8080/generate-description
+Content-Type: application/json
+
+{
+  "userPromptText": "Can you explain what you see in the following image"
+}
+
+
+
