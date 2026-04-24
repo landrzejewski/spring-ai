@@ -14,14 +14,13 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.VectorStoreRetriever;
 import org.springframework.ai.vectorstore.filter.FilterExpressionTextParser;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.training.springai.AiConfiguration;
 import pl.training.springai.chat.model.PromptRequest;
 import reactor.core.publisher.Flux;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -183,5 +182,28 @@ public class RagController {
         return expr.isEmpty() ? null : expr.toString();
     }
 
+    @GetMapping("rag-debug")
+    public Map<String, Object> debugPgVectorStore() {
+        var searchRequest = SearchRequest.builder()
+                .query("books programming")
+                .topK(DEFAULT_TOP_K)
+                .similarityThreshold(DEFAULT_SIMILARITY_THRESHOLD)
+                .build();
+        var documents = pgVectorStore.similaritySearch(searchRequest);
+
+        var result = new LinkedHashMap<String, Object>();
+        result.put("documentsCount", documents.size());
+        result.put("documents", documents.stream()
+                .map(doc -> {
+                    var docInfo = new java.util.LinkedHashMap<String, Object>();
+                    docInfo.put("id", doc.getId());
+                    docInfo.put("content", doc.getText().substring(0, Math.min(100, doc.getText().length())) + "...");
+                    docInfo.put("metadata", doc.getMetadata());
+                    return docInfo;
+                })
+                .toList());
+
+        return result;
+    }
 
 }

@@ -236,7 +236,6 @@ Content-Type: application/json
 
 ###
 
-###
 POST http://localhost:8080/rag-filter-by-metadata?year=2015&genre=Programming
 Content-Type: application/json
 
