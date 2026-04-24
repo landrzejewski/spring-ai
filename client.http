@@ -304,3 +304,165 @@ Content-Type: application/json
 {
   "userPromptText": "At a summer art camp, each of the 15 young artists receives 3 paintbrushes to use for their projects. The brushes are neatly organized by the instructors before the first day of camp. The instructors want to make sure they’ve prepared enough paintbrushes for everyone. How many paintbrushes are there in total for all the students?"
 }
+
+
+### ========================================================================
+### AGENTS EXAMPLES - Wzorce agentow AI
+### ========================================================================
+###
+### 1. PROMPT CHAINING - sekwencyjne przetwarzanie (analyze -> improve -> refactor)
+### 2. ROUTING - klasyfikacja i kierowanie do specjalistycznych handlerow
+### 3. PARALLELIZATION - rownolegle wykonywanie niezaleznych analiz
+### 4. ORCHESTRATOR-WORKERS - dynamiczna dekompozycja i integracja zadan
+### 5. EVALUATOR-OPTIMIZER - iteracyjna poprawa z petla zwrotna
+###
+### ========================================================================
+
+### ---------------------------------------------------------------------------
+### 1. PROMPT CHAINING - lancuch promptow dla Code Review
+### Sekwencja: Analyze -> Improve -> Refactor
+### Wyjscie kroku N staje sie wejsciem kroku N+1
+### ---------------------------------------------------------------------------
+
+### Chain: Prosty kod z bledami - metoda zwraca void ale ma return
+POST http://localhost:8080/agents/chain
+Content-Type: application/json
+
+{
+  "userPromptText": "public void foo() { int x = 1; return x; }"
+}
+
+### Chain: Kod z wieloma problemami - magic numbers, brak walidacji
+POST http://localhost:8080/agents/chain
+Content-Type: application/json
+
+{
+  "userPromptText": "public double calculate(int a, int b) { if(b == 0) return -999; return a * 3.14159 / b + 100; }"
+}
+
+### Chain: Kod z code smells - dluga metoda, brak obslugi bledow
+POST http://localhost:8080/agents/chain
+Content-Type: application/json
+
+{
+  "userPromptText": "public void processUser(String name, String email, int age) { System.out.println(name); System.out.println(email); System.out.println(age); if(age > 18) { System.out.println(\"Adult\"); } else { System.out.println(\"Minor\"); } String upper = name.toUpperCase(); System.out.println(upper); }"
+}
+
+### ---------------------------------------------------------------------------
+### 2. ROUTING - klasyfikacja ticketow i kierowanie do specjalistow
+### Kategorie: BILLING, TECHNICAL, SALES, GENERAL
+### LLM klasyfikuje na podstawie kontekstu, nie prostych regul
+### ---------------------------------------------------------------------------
+
+### Route: BILLING - problem z platnością
+POST http://localhost:8080/agents/route
+Content-Type: application/json
+
+{
+  "userPromptText": "I was charged twice for my subscription last month and I need a refund"
+}
+
+### Route: TECHNICAL - blad w aplikacji
+POST http://localhost:8080/agents/route
+Content-Type: application/json
+
+{
+  "userPromptText": "I cannot login to my account. The page shows error 500 and then redirects to blank screen"
+}
+
+### Route: SALES - pytanie o cennik i funkcjonalnosci
+POST http://localhost:8080/agents/route
+Content-Type: application/json
+
+{
+  "userPromptText": "What features are included in the Enterprise plan? Can you compare it with the Pro plan?"
+}
+
+### Route: GENERAL - ogolne pytanie / feedback
+POST http://localhost:8080/agents/route
+Content-Type: application/json
+
+{
+  "userPromptText": "I love your product! Just wanted to share some ideas for new features you might consider"
+}
+
+### ---------------------------------------------------------------------------
+### 3. PARALLELIZATION - rownolegle analizy kodu
+### 3 niezalezne analizy: Quality, Security, Performance
+### Wyniki agregowane z ocena wazona (40% quality, 35% security, 25% performance)
+### ---------------------------------------------------------------------------
+
+### Parallel: Kod z SQL injection - test bezpieczenstwa
+POST http://localhost:8080/agents/parallel
+Content-Type: application/json
+
+{
+  "sourceCode": "public List<User> findUsers(String name) { String sql = \"SELECT * FROM users WHERE name = '\" + name + \"'\"; return jdbcTemplate.query(sql, userMapper); }",
+  "language": "Java",
+  "context": "Service wyszukujacy uzytkownikow po nazwie"
+}
+
+### Parallel: Kod z problemami wydajnosci - N+1 i brak cachowania
+POST http://localhost:8080/agents/parallel
+Content-Type: application/json
+
+{
+  "sourceCode": "public List<OrderDTO> getOrders() { List<Order> orders = orderRepository.findAll(); return orders.stream().map(o -> new OrderDTO(o.getId(), o.getCustomer().getName(), o.getItems().size())).toList(); }",
+  "language": "Java",
+  "context": "Endpoint zwracajacy liste zamowien z danymi klienta"
+}
+
+### Parallel: Czysty kod - baseline dla porownania
+POST http://localhost:8080/agents/parallel
+Content-Type: application/json
+
+{
+  "sourceCode": "public Optional<User> findById(Long id) { Objects.requireNonNull(id, \"User ID cannot be null\"); return userRepository.findById(id); }",
+  "language": "Java",
+  "context": "Prosta metoda wyszukiwania uzytkownika po ID"
+}
+
+### ---------------------------------------------------------------------------
+### 4. ORCHESTRATOR-WORKERS - dekompozycja projektu
+### Orchestrator: analizuje request -> tworzy plan -> integruje wyniki
+### Workers: wykonuja poszczegolne zadania (respektujac zaleznosci)
+### ---------------------------------------------------------------------------
+
+### Orchestrate: Budowa REST API dla todo app
+POST http://localhost:8080/agents/orchestrate
+Content-Type: application/json
+
+{
+  "userPromptText": "Build a REST API for a todo application with CRUD operations. Include entity, repository, service and controller layers."
+}
+
+### Orchestrate: Implementacja systemu uwierzytelniania
+POST http://localhost:8080/agents/orchestrate
+Content-Type: application/json
+
+{
+  "userPromptText": "Implement a simple JWT authentication system with login endpoint, token generation and validation"
+}
+
+### ---------------------------------------------------------------------------
+### 5. EVALUATOR-OPTIMIZER - iteracyjna generacja kodu
+### Petla: Generate -> Evaluate -> Improve (max 3 iteracje)
+### Kryteria: Correctness(30%), Readability(20%), Efficiency(20%), Maintainability(20%), Security(10%)
+### Akceptacja gdy score >= 0.8
+### ---------------------------------------------------------------------------
+
+### Optimize: Funkcja sprawdzajaca palindrom
+POST http://localhost:8080/agents/optimize
+Content-Type: application/json
+
+{
+  "userPromptText": "Write a Java function to check if a string is a palindrome. Handle edge cases like null, empty string, and ignore case/spaces."
+}
+
+### Optimize: Funkcja sortowania babelkowego z optymalizacja
+POST http://localhost:8080/agents/optimize
+Content-Type: application/json
+
+{
+  "userPromptText": "Write an optimized bubble sort implementation in Java that stops early if the array is already sorted"
+}

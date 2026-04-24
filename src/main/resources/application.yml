@@ -8,6 +8,8 @@ spring:
       init:
         pull-model-strategy: when_missing
         max-retries: 3
+        additional-models:
+          - SpeakLeash/bielik-1.5b-v3.0-instruct
     openai:
       api-key: ${OPENAI_KEY}
       chat:
