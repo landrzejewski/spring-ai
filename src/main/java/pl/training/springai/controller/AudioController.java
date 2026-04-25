@@ -1,4 +1,4 @@
-package pl.training.springai.chat;
+package pl.training.springai.controller;
 
 import org.springframework.ai.audio.transcription.AudioTranscriptionPrompt;
 import org.springframework.ai.audio.transcription.TranscriptionModel;
@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import pl.training.springai.chat.model.PromptRequest;
+import pl.training.springai.model.PromptRequest;
 
 @RestController
 public class AudioController {

@@ -1,4 +1,4 @@
-package pl.training.springai.chat;
+package pl.training.springai.controller;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.document.Document;
@@ -11,12 +11,11 @@ import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.ai.vectorstore.VectorStoreRetriever;
 import org.springframework.ai.vectorstore.filter.FilterExpressionTextParser;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.web.bind.annotation.*;
 import pl.training.springai.AiConfiguration;
-import pl.training.springai.chat.model.PromptRequest;
+import pl.training.springai.model.PromptRequest;
 import reactor.core.publisher.Flux;
 
 import java.util.LinkedHashMap;

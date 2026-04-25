@@ -1,7 +1,7 @@
-package pl.training.springai.chat.tool;
+package pl.training.springai.tool;
 
 import org.springframework.context.annotation.Description;
-import pl.training.springai.chat.model.DoubleValue;
+import pl.training.springai.model.DoubleValue;
 
 import java.util.function.Function;
 

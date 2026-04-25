@@ -22,7 +22,7 @@ import pl.training.springai.agents.parallelization.ParallelizerAction;
 import pl.training.springai.agents.router.Router;
 import pl.training.springai.agents.router.TicketCategory;
 import pl.training.springai.agents.router.TicketRoutingResult;
-import pl.training.springai.chat.model.PromptRequest;
+import pl.training.springai.model.PromptRequest;
 
 import java.util.List;
 

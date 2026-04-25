@@ -1,11 +1,11 @@
-package pl.training.springai.chat;
+package pl.training.springai.controller;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import pl.training.springai.chat.model.PromptRequest;
+import pl.training.springai.model.PromptRequest;
 import reactor.core.publisher.Flux;
 
 @RestController

@@ -1,8 +1,5 @@
-package pl.training.springai.chat.moderation;
+package pl.training.springai.moderation;
 
-/**
- * Wyjatek rzucany gdy tekst narusza polityki moderacji.
- */
 public class ModerationException extends RuntimeException {
 
     private final String category;
@@ -15,4 +12,5 @@ public class ModerationException extends RuntimeException {
     public String getCategory() {
         return category;
     }
+
 }

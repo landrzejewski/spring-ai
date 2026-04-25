@@ -1,4 +1,4 @@
-package pl.training.springai.chat.advisor;
+package pl.training.springai.advisor;
 
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
@@ -11,14 +11,6 @@ import org.springframework.ai.chat.model.Generation;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Advisor wykrywajacy proby wycieku system prompt (prompt leak prevention).
- *
- * Dzialanie:
- * 1. Generuje losowy UUID (canary word)
- * 2. Dodaje go do system message jako ukryty token
- * 3. Jesli canary word pojawi sie w odpowiedzi - wykryto wyciek
- */
 public class CanaryWordAdvisor implements CallAdvisor {
 
     private static final String DEFAULT_MESSAGE = "Canary word detected! Potential prompt leak attempt blocked.";
@@ -85,4 +77,5 @@ public class CanaryWordAdvisor implements CallAdvisor {
             return new CanaryWordAdvisor(canaryWordFoundMessage);
         }
     }
+
 }

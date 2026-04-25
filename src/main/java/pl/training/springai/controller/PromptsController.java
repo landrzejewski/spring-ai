@@ -1,4 +1,4 @@
-package pl.training.springai.chat;
+package pl.training.springai.controller;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.SystemMessage;
@@ -11,7 +11,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import pl.training.springai.chat.model.PromptRequest;
+import pl.training.springai.model.PromptRequest;
 
 import java.util.List;
 import java.util.Map;

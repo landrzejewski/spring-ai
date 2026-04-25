@@ -1,15 +1,9 @@
-package pl.training.springai.chat.moderation;
+package pl.training.springai.moderation;
 
 import org.springframework.ai.moderation.ModerationModel;
 import org.springframework.ai.moderation.ModerationPrompt;
 import org.springframework.stereotype.Service;
 
-/**
- * Serwis moderacji tresci przez OpenAI Moderation API.
- *
- * Sprawdza tekst PRZED wyslaniem do LLM.
- * Kategorie: Hate, Harassment, Violence, Self-harm, Sexual
- */
 @Service
 public class ModerationService {
 
@@ -19,9 +13,6 @@ public class ModerationService {
         this.moderationModel = moderationModel;
     }
 
-    /**
-     * Sprawdza tekst - rzuca ModerationException przy naruszeniu.
-     */
     public void moderate(String text) {
         var moderationResponse = moderationModel.call(new ModerationPrompt(text));
         var moderationResult = moderationResponse.getResult()
@@ -47,4 +38,5 @@ public class ModerationService {
             throw new ModerationException("Sexual");
         }
     }
+
 }

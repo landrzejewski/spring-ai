@@ -1,6 +1,6 @@
-package pl.training.springai.chat.model;
+package pl.training.springai.model;
 
-public record ChatResponseWithMetadata(
+public record Metadata(
         String content,
         String model,
         Integer promptTokens,

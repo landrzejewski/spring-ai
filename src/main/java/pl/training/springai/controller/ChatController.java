@@ -1,4 +1,4 @@
-package pl.training.springai.chat;
+package pl.training.springai.controller;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -15,12 +15,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.*;
-import pl.training.springai.chat.advisor.TimestampAdvisor;
-import pl.training.springai.chat.model.Book;
-import pl.training.springai.chat.model.DoubleValue;
-import pl.training.springai.chat.model.PromptRequest;
-import pl.training.springai.chat.tool.DateTimeTool;
-import pl.training.springai.chat.tool.PowerTool;
+import pl.training.springai.advisor.TimestampAdvisor;
+import pl.training.springai.model.Book;
+import pl.training.springai.model.DoubleValue;
+import pl.training.springai.model.PromptRequest;
+import pl.training.springai.tool.DateTimeTool;
+import pl.training.springai.tool.PowerTool;
 import reactor.core.publisher.Flux;
 
 import java.util.*;

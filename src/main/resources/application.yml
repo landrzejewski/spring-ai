@@ -2,7 +2,7 @@ spring:
   ai:
     ollama:
       chat:
-        model: SpeakLeash/bielik-1.5b-v3.0-instruct //qwen3.5:0.8b
+        model: SpeakLeash/bielik-1.5b-v3.0-instruct
         #options:
         #  max-tokens: 1_000
       init:

@@ -1,4 +1,4 @@
-package pl.training.springai.chat.model;
+package pl.training.springai.model;
 
 public record DoubleValue(Double value) {
 }

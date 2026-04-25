@@ -1,13 +1,10 @@
-package pl.training.springai.chat.moderation;
+package pl.training.springai.moderation;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-/**
- * Handler ModerationException - zwraca HTTP 400 z ProblemDetail (RFC 9457).
- */
 @RestControllerAdvice
 public class ModerationExceptionHandler {
 
@@ -18,4 +15,5 @@ public class ModerationExceptionHandler {
         problemDetail.setProperty("category", ex.getCategory());
         return problemDetail;
     }
+
 }

@@ -1,4 +1,4 @@
-package pl.training.springai.chat.advisor;
+package pl.training.springai.advisor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,16 +8,6 @@ import org.springframework.ai.chat.client.advisor.api.CallAdvisor;
 import org.springframework.ai.chat.client.advisor.api.CallAdvisorChain;
 import org.springframework.ai.chat.messages.SystemMessage;
 
-/**
- * Advisor do logowania komunikacji z LLM.
- *
- * Loguje (sprawdz konsole serwera):
- * - Wiadomosc uzytkownika
- * - Wiadomosc systemowa
- * - Odpowiedz modelu
- * - Statystyki tokenow
- * - Czas wykonania
- */
 public class ObservabilityAdvisor implements CallAdvisor {
 
     private static final Logger logger = LoggerFactory.getLogger(ObservabilityAdvisor.class);
@@ -74,4 +64,5 @@ public class ObservabilityAdvisor implements CallAdvisor {
         logger.info("Duration: {} ms", durationMs);
         logger.info("==================================");
     }
+
 }

@@ -1,4 +1,4 @@
-package pl.training.springai.chat.advisor;
+package pl.training.springai.advisor;
 
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
@@ -14,16 +14,6 @@ import org.springframework.ai.ollama.api.OllamaChatOptions;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Advisor bezpieczenstwa sprawdzajacy tresc zapytania za pomoca modelu Bielik (Ollama).
- *
- * Dzialanie:
- * 1. Przechwytuje zapytanie uzytkownika PRZED wyslaniem do glownego LLM
- * 2. Wysyla tresc do modelu Bielik z promptem klasyfikujacym
- * 3. Bielik ocenia czy tresc jest bezpieczna (kategorie: HATE, VULGAR, SEX, CRIME, SELF_HARM)
- * 4. Jesli niebezpieczna - blokuje zapytanie i zwraca komunikat
- * 5. Jesli bezpieczna - przekazuje do nastepnego advisora/LLM
- */
 public class SafetyAdvisor implements CallAdvisor {
 
     private static final String DEFAULT_UNSAFE_MESSAGE = "Tresc zapytania zostala uznana za niebezpieczna i zostala zablokowana.";
@@ -137,4 +127,5 @@ public class SafetyAdvisor implements CallAdvisor {
             return new SafetyAdvisor(ollamaChatModel, modelName, unsafeContentMessage);
         }
     }
+
 }
