@@ -1,9 +1,0 @@
-apiVersion: 1
-
-providers:
-  - name: "Spring AI"
-    type: file
-    allowUiUpdates: true
-    options:
-      path: /otel-lgtm/spring-ai-dashboards
-      foldersFromFilesStructure: false

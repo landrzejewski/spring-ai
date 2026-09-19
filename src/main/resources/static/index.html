@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Docs Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" media="(prefers-color-scheme: light)" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <link rel="stylesheet" media="(prefers-color-scheme: dark)" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.0/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/kotlin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/properties.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/groovy.min.js"></script>
+    <style>
+        :root {
+            --paper: #F4F6F4;
+            --sheet: #FFFFFF;
+            --ink: #18231D;
+            --muted: #5E6B64;
+            --rule: #DCE3DE;
+            --spring: #2F6B45;
+            --leaf: #6DB33F;
+            --leaf-wash: #E6F2DD;
+            --danger: #A3352B;
+            --serif: 'Newsreader', Georgia, serif;
+            --sans: 'Instrument Sans', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', ui-monospace, monospace;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --paper: #0F1813;
+                --sheet: #16211B;
+                --ink: #E3EAE5;
+                --muted: #93A39A;
+                --rule: #2A3830;
+                --spring: #8CCB6A;
+                --leaf: #6DB33F;
+                --leaf-wash: #1F3325;
+                --danger: #E58A7F;
+            }
+        }
+
+        * { box-sizing: border-box; }
+        [hidden] { display: none !important; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            background: var(--paper);
+            color: var(--ink);
+            font: 400 16px/1.5 var(--sans);
+            display: flex;
+            flex-direction: column;
+        }
+        button { font: inherit; color: inherit; cursor: pointer; }
+        :focus-visible { outline: 2px solid var(--leaf); outline-offset: 2px; }
+
+        /* Header */
+        .masthead {
+            border-bottom: 1px solid var(--rule);
+            background: var(--sheet);
+        }
+        .masthead-inner {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .mark {
+            width: 30px; height: 30px; flex: none;
+            border-radius: 50%;
+            background: var(--spring);
+            display: grid; place-items: center;
+        }
+        .mark svg { width: 17px; height: 17px; fill: var(--sheet); }
+        .title { flex: 1; min-width: 0; }
+        .title h1 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .title p { margin: 0; font-size: 13px; color: var(--muted); }
+        .ghost {
+            border: 1px solid var(--rule);
+            background: transparent;
+            border-radius: 8px;
+            padding: 7px 12px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .ghost:hover { border-color: var(--muted); }
+
+        /* Thread */
+        main { flex: 1; overflow-y: auto; }
+        .thread { max-width: 760px; margin: 0 auto; padding: 32px 20px 24px; }
+
+        .welcome { padding: 48px 0 16px; }
+        .welcome h2 {
+            font: 500 40px/1.1 var(--serif);
+            letter-spacing: -0.02em;
+            margin: 0 0 14px;
+            max-width: 16ch;
+        }
+        .welcome p { color: var(--muted); margin: 0 0 28px; max-width: 58ch; }
+        .suggestions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .suggestion {
+            text-align: left;
+            background: var(--sheet);
+            border: 1px solid var(--rule);
+            border-radius: 10px;
+            padding: 14px 16px;
+            font: 400 17px/1.35 var(--serif);
+        }
+        .suggestion:hover { border-color: var(--spring); }
+        .suggestion small { display: block; margin-top: 6px; font: 500 12px var(--sans); color: var(--muted); }
+
+        .exchange { padding: 8px 0 36px; }
+        .exchange + .exchange { border-top: 1px solid var(--rule); padding-top: 32px; }
+        .question {
+            font: 600 20px/1.35 var(--sans);
+            letter-spacing: -0.01em;
+            margin: 0 0 16px;
+            white-space: pre-wrap;
+        }
+
+        .answer { font: 400 18px/1.65 var(--serif); max-width: 68ch; }
+        .answer > :first-child { margin-top: 0; }
+        .answer h1, .answer h2, .answer h3, .answer h4 {
+            font-family: var(--sans);
+            font-weight: 600;
+            line-height: 1.3;
+            margin: 1.4em 0 0.5em;
+        }
+        .answer h1 { font-size: 21px; }
+        .answer h2 { font-size: 19px; }
+        .answer h3, .answer h4 { font-size: 17px; }
+        .answer p, .answer ul, .answer ol { margin: 0 0 0.9em; }
+        .answer li { margin: 0.25em 0; }
+        .answer a { color: var(--spring); }
+        .answer :not(pre) > code {
+            font: 400 0.84em var(--mono);
+            background: var(--leaf-wash);
+            padding: 0.1em 0.35em;
+            border-radius: 4px;
+        }
+        .answer pre {
+            position: relative;
+            font: 400 14px/1.55 var(--mono);
+            background: var(--sheet);
+            border: 1px solid var(--rule);
+            border-radius: 10px;
+            padding: 16px 18px;
+            overflow-x: auto;
+        }
+        .answer pre code.hljs { background: transparent; padding: 0; }
+        .answer table { border-collapse: collapse; font: 400 15px/1.45 var(--sans); margin: 0 0 1em; }
+        .answer th, .answer td { border-bottom: 1px solid var(--rule); padding: 8px 12px; text-align: left; }
+        .answer blockquote { margin: 0 0 1em; padding-left: 16px; border-left: 3px solid var(--rule); color: var(--muted); }
+
+        /* Inline citations: "(spring-framework.pdf, p. 201)" becomes a page marker. */
+        .ref {
+            font: 600 12px/1 var(--sans);
+            font-style: normal;
+            white-space: nowrap;
+            color: var(--spring);
+            background: var(--leaf-wash);
+            border-radius: 999px;
+            padding: 3px 8px;
+            vertical-align: 2px;
+        }
+
+        /* The caret sits at the end of the text being written. It is drawn by CSS on the last
+           block, so adding it never inserts a node and never moves the text around it. */
+        .answer.streaming .tail > :last-child:not(ul, ol, pre)::after,
+        .answer.streaming .tail > :is(ul, ol):last-child > li:last-child::after,
+        .answer.streaming .done:has(+ .tail:empty) > :last-child:not(ul, ol, pre)::after {
+            content: '';
+            display: inline-block;
+            width: 8px; height: 1em;
+            margin-left: 3px;
+            vertical-align: -0.12em;
+            background: var(--leaf);
+            animation: blink 1s steps(2) infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 0 14px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+        .status::before {
+            content: '';
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--leaf);
+            animation: pulse 1.2s ease-in-out infinite;
+        }
+        @keyframes pulse { 50% { opacity: 0.25; } }
+        .status.settled::before { animation: none; }
+
+        /* Consulted pages */
+        .pages { margin-top: 24px; }
+        .pages h3 { font: 600 13px var(--sans); color: var(--muted); margin: 0 0 10px; }
+        .pages ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+        .page {
+            display: grid;
+            grid-template-columns: 64px minmax(0, 1fr);
+            align-items: baseline;
+            gap: 14px;
+            background: var(--sheet);
+            border: 1px solid var(--rule);
+            border-left: 3px solid var(--leaf);
+            border-radius: 4px 10px 10px 4px;
+            padding: 10px 14px;
+        }
+        .page-no { font: 500 26px/1 var(--serif); font-variant-numeric: lining-nums tabular-nums; color: var(--spring); }
+        .ref + .ref { margin-left: 4px; }
+        .page-no span { display: block; font: 500 11px var(--sans); color: var(--muted); margin-top: 4px; }
+        .page-text { min-width: 0; }
+        .page-section { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .page-file { font-size: 13px; color: var(--muted); }
+        .no-pages { font-size: 14px; color: var(--muted); margin: 0; }
+
+        .tools { display: flex; gap: 8px; margin-top: 14px; }
+        .tools .ghost { font-size: 13px; padding: 5px 10px; }
+
+        .error {
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 15px;
+        }
+
+        /* Composer */
+        .composer { border-top: 1px solid var(--rule); background: var(--sheet); }
+        .composer form {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 14px 20px 18px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .composer textarea {
+            flex: 1;
+            resize: none;
+            min-height: 48px;
+            max-height: 200px;
+            overflow-y: hidden;
+            border: 1px solid var(--rule);
+            border-radius: 12px;
+            background: var(--paper);
+            color: var(--ink);
+            padding: 12px 14px;
+            font: 400 16px/1.45 var(--sans);
+        }
+        .composer textarea:focus { outline: none; border-color: var(--spring); }
+        .send {
+            height: 48px;
+            min-width: 88px;
+            border: 0;
+            border-radius: 12px;
+            background: var(--spring);
+            color: var(--sheet);
+            font-weight: 600;
+            padding: 0 18px;
+        }
+        .send:disabled { opacity: 0.5; cursor: default; }
+        .hint { max-width: 760px; margin: -10px auto 0; padding: 0 20px 12px; font-size: 12px; color: var(--muted); }
+
+        @media (max-width: 600px) {
+            .welcome h2 { font-size: 32px; }
+            .suggestions { grid-template-columns: 1fr; }
+            .title p { display: none; }
+            .masthead-inner { gap: 12px; }
+            #newConversation { font-size: 13px; padding: 6px 10px; }
+            .answer { font-size: 17px; }
+            .hint { display: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .answer.streaming *::after, .status::before { animation: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="masthead">
+    <div class="masthead-inner">
+        <div class="mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M20.2 3.8c-4.4-.4-9.6.9-12.6 4.3-2.6 3-2.9 6.9-1.1 9.6-1 1-1.8 2.1-2.3 3.2l1.5.7c.4-.9 1-1.8 1.8-2.6 2.8 1.6 6.6 1 9.2-1.6 3.1-3.2 4-8.6 3.5-13.6zM8.6 16.3c1.9-2.3 4.4-4.3 7.2-5.6l-.6-1.4c-3 1.4-5.7 3.5-7.7 6-.9-2-.4-4.7 1.3-6.6 2.2-2.5 6-3.6 9.9-3.5.2 3.8-.7 7.8-3.1 10.2-1.9 1.9-4.8 2.3-7 .9z"/></svg>
+        </div>
+        <div class="title">
+            <h1>Spring docs assistant</h1>
+            <p>Spring Framework and Spring Data JPA reference manuals</p>
+        </div>
+        <button id="newConversation" class="ghost" type="button">New conversation</button>
+    </div>
+</header>
+
+<main id="scroller">
+    <div class="thread" id="thread" aria-live="polite"></div>
+</main>
+
+<footer class="composer">
+    <form id="composer">
+        <textarea id="question" rows="1" aria-label="Your question" placeholder="Ask a question about Spring" autocomplete="off"></textarea>
+        <button id="send" class="send" type="submit">Ask</button>
+    </form>
+    <p class="hint">Enter to send, Shift+Enter for a new line. Follow-up questions keep the context of this conversation.</p>
+</footer>
+
+<script>
+    // Relative paths, so the page works behind any host or port the application is served from.
+    const API_URL = 'questions';
+    const CONVERSATIONS_URL = 'conversations';
+    const THREAD_KEY = 'thread';
+
+    const SUGGESTIONS = [
+        {text: 'How do I use Spring Data repositories?', note: 'Spring Data JPA'},
+        {text: 'How do I configure transactions declaratively?', note: 'Spring Framework'},
+        {text: 'What is the difference between constructor and setter injection?', note: 'Spring Framework'},
+        {text: 'Jak działa stronicowanie wyników w Spring Data?', note: 'Question in Polish, answer in Polish'}
+    ];
+
+    const threadEl = document.getElementById('thread');
+    const scroller = document.getElementById('scroller');
+    const input = document.getElementById('question');
+    const sendBtn = document.getElementById('send');
+    let controller = null;
+
+    marked.use({gfm: true, breaks: false});
+
+    // The server groups messages by conversationId; keeping it for the lifetime of the tab is
+    // what turns single questions into a conversation.
+    function conversationId() {
+        let id = sessionStorage.getItem('conversationId');
+        if (!id) {
+            id = crypto.randomUUID();
+            sessionStorage.setItem('conversationId', id);
+        }
+        return id;
+    }
+
+    // The server keeps the history for the model, the tab keeps it for the reader - so a reload
+    // shows the same conversation the assistant remembers.
+    function loadThread() {
+        try { return JSON.parse(sessionStorage.getItem(THREAD_KEY)) || []; } catch { return []; }
+    }
+    function saveThread(thread) {
+        try { sessionStorage.setItem(THREAD_KEY, JSON.stringify(thread)); } catch { /* storage full or blocked */ }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text ?? '';
+        return div.innerHTML;
+    }
+
+    function shortName(fileName) {
+        if (!fileName) return 'Document';
+        if (fileName.startsWith('spring-framework')) return 'Spring Framework';
+        if (fileName.startsWith('spring-data-jpa')) return 'Spring Data JPA';
+        return fileName.replace(/\.pdf$/, '');
+    }
+
+    function renderMarkdown(text) {
+        const html = DOMPurify.sanitize(marked.parse(text));
+        // "(spring-framework.pdf, p. 201)" and "(file.pdf, p. 155; file.pdf, p. 168)" become page
+        // markers; the parentheses go with them, the marker already sets the citation apart.
+        const reference = /([\w.-]+\.pdf),\s*(?:p\.|page|str\.)\s*(\d+)/g;
+        const marker = (_, file, page) =>
+            `<cite class="ref" title="${escapeHtml(file)} page ${page}">${escapeHtml(shortName(file))}, p. ${page}</cite>`;
+        return html
+            .replace(/\(\s*((?:[\w.-]+\.pdf,\s*(?:p\.|page|str\.)\s*\d+[;,\s]*)+)\)/g,
+                (_, group) => group.replace(/[;,]\s*$/, '').replace(/;\s*/g, ' ').replace(reference, marker))
+            .replace(reference, marker);
+    }
+
+    function highlight(el) {
+        el.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+    }
+
+    function renderWelcome() {
+        threadEl.innerHTML = `
+            <section class="welcome">
+                <h2>Ask the Spring reference manuals</h2>
+                <p>Answers come only from the Spring Framework and Spring Data JPA reference documentation.
+                   Every answer lists the manual pages it is based on, and you can ask in any language.</p>
+                <div class="suggestions">
+                    ${SUGGESTIONS.map((s, i) => `<button class="suggestion" type="button" data-i="${i}">${escapeHtml(s.text)}<small>${escapeHtml(s.note)}</small></button>`).join('')}
+                </div>
+            </section>`;
+        threadEl.querySelectorAll('.suggestion').forEach(button =>
+            button.addEventListener('click', () => ask(SUGGESTIONS[button.dataset.i].text)));
+    }
+
+    function pagesHtml(sources) {
+        if (!sources) return '';
+        if (sources.length === 0) {
+            return `<div class="pages"><p class="no-pages">No page of the manuals matched this question.</p></div>`;
+        }
+        const items = sources.map(source => `
+            <li class="page">
+                <div class="page-no">${source.page ?? '–'}<span>page</span></div>
+                <div class="page-text">
+                    <div class="page-section" title="${escapeHtml(source.section)}">${escapeHtml(lastSection(source.section) || shortName(source.fileName))}</div>
+                    <div class="page-file">${escapeHtml(shortName(source.fileName))}${source.section ? ', ' + escapeHtml(chapterOf(source.section)) : ''}</div>
+                </div>
+            </li>`).join('');
+        return `<div class="pages"><h3>Pages consulted</h3><ol>${items}</ol></div>`;
+    }
+
+    // "Chapter 4 > 4.7. Extensions > 4.7.1. Querydsl | 4.7.2. Web support" -> "4.7.1. Querydsl"
+    function lastSection(section) {
+        if (!section) return '';
+        const path = section.split(' | ')[0].split(' > ');
+        return path[path.length - 1];
+    }
+    function chapterOf(section) {
+        const path = section.split(' | ')[0].split(' > ');
+        return path.find(part => /^(Chapter|Appendix)/.test(part)) || path[0];
+    }
+
+    function exchangeElement(entry) {
+        const el = document.createElement('article');
+        el.className = 'exchange';
+        el.innerHTML = `
+            <h2 class="question">${escapeHtml(entry.question)}</h2>
+            <p class="status" hidden></p>
+            <div class="answer"><div class="done"></div><div class="tail"></div></div>
+            <div class="pages-slot"></div>
+            <div class="tools" hidden>
+                <button class="ghost copy" type="button">Copy answer</button>
+            </div>`;
+        el.querySelector('.copy').addEventListener('click', async event => {
+            await navigator.clipboard.writeText(entry.answer);
+            event.target.textContent = 'Copied';
+            setTimeout(() => event.target.textContent = 'Copy answer', 1500);
+        });
+        return el;
+    }
+
+    // A finished exchange: rendered in one pass, used after streaming and when restoring the thread.
+    function showFinished(el, entry) {
+        const answer = el.querySelector('.answer');
+        answer.classList.remove('streaming');
+        // The status line stays and turns into a summary, so the answer below it does not move.
+        const status = el.querySelector('.status');
+        const count = entry.sources?.length ?? 0;
+        status.textContent = count === 0 ? 'No matching pages in the manuals'
+            : `Based on ${count} ${count === 1 ? 'page' : 'pages'} of the manuals`;
+        status.classList.add('settled');
+        status.hidden = !entry.sources;
+        if (entry.error) {
+            el.querySelector('.tail').innerHTML = `<div class="error">${escapeHtml(entry.error)}</div>`;
+        }
+        el.querySelector('.pages-slot').innerHTML = pagesHtml(entry.sources);
+        el.querySelector('.tools').hidden = !entry.answer;
+    }
+
+    function showStatus(el, text) {
+        const status = el.querySelector('.status');
+        status.textContent = text;
+        status.hidden = false;
+    }
+
+    /**
+     * Renders a streamed answer without re-rendering what is already on screen. Markdown is cut
+     * into blocks at blank lines outside code fences; a finished block is rendered once and
+     * appended, and only the block still being written is replaced on each update. Rebuilding the
+     * whole answer every frame is what made the text jump: an unclosed code fence turned the rest
+     * of the answer into code and back, and every list and heading was laid out again.
+     */
+    function streamRenderer(el) {
+        const done = el.querySelector('.done');
+        const tail = el.querySelector('.tail');
+        const fences = text => (text.match(/^ {0,3}(```|~~~)/gm) || []).length;
+        let committed = 0;
+        let shownTail = null;
+
+        function append(markdown) {
+            const block = document.createElement('div');
+            block.innerHTML = renderMarkdown(markdown);
+            highlight(block);
+            done.append(...block.childNodes);
+        }
+
+        return function update(text, final) {
+            const pending = text.slice(committed);
+            let boundary = final ? pending.length : -1;
+            if (!final) {
+                // A blank line outside a fence, followed by an unindented line: the block before it
+                // cannot change any more. Indented lines may still belong to the list above.
+                const blankLine = /\n[ \t]*\n(?=\S)/g;
+                let match;
+                while ((match = blankLine.exec(pending))) {
+                    const end = match.index + match[0].length;
+                    if (fences(pending.slice(0, end)) % 2 === 0) boundary = end;
+                }
+            }
+            if (boundary > 0) {
+                append(pending.slice(0, boundary));
+                committed += boundary;
+            }
+            let rest = final ? '' : text.slice(committed);
+            // A citation still being written - "(spring-framework.pdf, p. 69" - waits until it is
+            // complete, instead of showing a wrong page number that changes a moment later.
+            rest = rest.replace(/\s*\([\w.-]*(?:\.pdf[^)]*)?$/, '');
+            // An unclosed fence is closed for display, so the code block does not swallow the text.
+            if (fences(rest) % 2 === 1) rest += '\n```';
+            if (rest !== shownTail) {
+                tail.innerHTML = rest ? renderMarkdown(rest) : '';
+                shownTail = rest;
+            }
+        };
+    }
+
+    function renderThread() {
+        const thread = loadThread();
+        if (thread.length === 0) {
+            renderWelcome();
+            return;
+        }
+        threadEl.innerHTML = '';
+        thread.forEach(entry => {
+            const el = exchangeElement(entry);
+            if (entry.answer) {
+                el.querySelector('.done').innerHTML = renderMarkdown(entry.answer);
+                highlight(el.querySelector('.done'));
+            }
+            showFinished(el, entry);
+            threadEl.appendChild(el);
+        });
+        scroller.scrollTop = scroller.scrollHeight;
+    }
+
+    // Turns one SSE frame into {event, data}. A multi-line payload arrives as several "data:"
+    // lines and has to be rejoined with a newline. The space after the colon is NOT stripped:
+    // Spring writes "data:value" with no padding, so a token that begins with a space arrives as
+    // "data: word", and stripping it would delete every space between words.
+    function parseEvent(frame) {
+        let event = 'message';
+        const data = [];
+        for (const line of frame.split('\n')) {
+            if (line.startsWith(':')) continue;
+            const colon = line.indexOf(':');
+            const field = colon === -1 ? line : line.slice(0, colon);
+            const value = colon === -1 ? '' : line.slice(colon + 1);
+            if (field === 'event') event = value;
+            else if (field === 'data') data.push(value);
+        }
+        return {event, data: data.join('\n')};
+    }
+
+    // Auto-scroll follows the answer only while the reader stays at the bottom; scrolling up to
+    // re-read something stops it until they scroll back down.
+    let following = true;
+    scroller.addEventListener('scroll', () => {
+        following = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 80;
+    }, {passive: true});
+
+    async function ask(question) {
+        question = question.trim();
+        if (!question || controller) return;
+
+        const thread = loadThread();
+        if (thread.length === 0) threadEl.innerHTML = '';
+        const entry = {question, answer: '', sources: null};
+        const el = exchangeElement(entry);
+        threadEl.appendChild(el);
+        el.querySelector('.answer').classList.add('streaming');
+        showStatus(el, 'Searching the manuals');
+        el.scrollIntoView({block: 'start'});
+        following = true;
+
+        input.value = '';
+        autoGrow();
+        controller = new AbortController();
+        sendBtn.textContent = 'Stop';
+
+        const update = streamRenderer(el);
+        let scheduled = false;
+        const repaint = () => {
+            if (scheduled) return;
+            scheduled = true;
+            requestAnimationFrame(() => {
+                scheduled = false;
+                update(entry.answer, false);
+                if (following) scroller.scrollTop = scroller.scrollHeight;
+            });
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Accept': 'text/event-stream'},
+                body: JSON.stringify({text: question, conversationId: conversationId()}),
+                signal: controller.signal
+            });
+            if (!response.ok) {
+                throw new Error(`The assistant returned HTTP ${response.status}. Check that the application, the model endpoint and the database are running.`);
+            }
+            // Events are separated by a blank line: one "sources" event with the retrieved pages,
+            // then a "token" event per fragment of the answer.
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            while (true) {
+                const {value, done} = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, {stream: true});
+                let separator;
+                while ((separator = buffer.indexOf('\n\n')) !== -1) {
+                    const {event, data} = parseEvent(buffer.slice(0, separator));
+                    buffer = buffer.slice(separator + 2);
+                    if (event === 'token') {
+                        entry.answer += data;
+                    } else if (event === 'sources') {
+                        entry.sources = JSON.parse(data);
+                        const count = entry.sources.length;
+                        showStatus(el, count === 0 ? 'No matching pages found'
+                            : `Found ${count} ${count === 1 ? 'page' : 'pages'}, writing the answer`);
+                    }
+                }
+                repaint();
+            }
+            if (!entry.answer) entry.error = 'The model returned an empty answer. Try asking again.';
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                entry.answer += entry.answer ? '\n\n*Stopped.*' : '*Stopped.*';
+            } else {
+                entry.error = error instanceof TypeError
+                    ? 'Could not reach the assistant. Check that the application is running.'
+                    : error.message;
+            }
+        } finally {
+            controller = null;
+            sendBtn.textContent = 'Ask';
+            update(entry.answer, true);
+            showFinished(el, entry);
+            thread.push(entry);
+            saveThread(thread);
+            input.focus();
+        }
+    }
+
+    async function newConversation() {
+        if (controller) controller.abort();
+        const id = sessionStorage.getItem('conversationId');
+        if (id) {
+            fetch(`${CONVERSATIONS_URL}/${id}`, {method: 'DELETE'}).catch(() => {});
+        }
+        sessionStorage.removeItem('conversationId');
+        sessionStorage.removeItem(THREAD_KEY);
+        renderWelcome();
+        input.focus();
+    }
+
+    function autoGrow() {
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 200) + 'px';
+        input.style.overflowY = input.scrollHeight > 200 ? 'auto' : 'hidden';
+    }
+
+    document.getElementById('composer').addEventListener('submit', event => {
+        event.preventDefault();
+        if (controller) controller.abort();
+        else ask(input.value);
+    });
+    input.addEventListener('keydown', event => {
+        if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+            event.preventDefault();
+            if (!controller) ask(input.value);
+        }
+    });
+    input.addEventListener('input', autoGrow);
+    document.getElementById('newConversation').addEventListener('click', newConversation);
+
+    renderThread();
+    input.focus();
+</script>
+</body>
+</html>

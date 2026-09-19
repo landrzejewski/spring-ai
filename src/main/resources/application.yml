@@ -1,129 +1,46 @@
-spring:
-  application:
-    name: springai
-  reactor:
-    # przenosi kontekst obserwacji (trace) do operatorow Flux - bez tego spany streamingu trafiaja do osobnych trace'ow
-    context-propagation: auto
-  ai:
-    ollama:
-      chat:
-        model: qwen3:0.6b
-      init:
-        pull-model-strategy: when_missing
-        max-retries: 3
-        chat:
-          # sedzia bezpieczenstwa dla SafetyAdvisor i ModerationModel (pl.training.moderation)
-          additional-models:
-            - speakleash/bielik-11b-v2.3-instruct:Q4_K_M
-      embedding:
-        model: bge-m3
-    openai:
-#      api-key: ${OPENAI_KEY}
-#      chat:
-#        model: gpt-4.1
-#        max-tokens: 4096
-#        temperature: 0.1
 
+spring:
+  ai:
+    openai:
       base-url: https://ai.klasawchmurze.pl
-      api-key: ${LLM_API_KEY}
+      api-key: ${LLM_API_KEY:sk-}
       chat:
-        # Nazwy modeli z litellm-config.yaml:
-        #   qwen38-27b     - kodowanie, najlepsza jakosc w VRAM
-        #   qwen3-30b-a3b  - najszybszy (390 t/s), 64k kontekstu
-        #   glm-4.7-flash  - agenty, narzedzia, wyszukiwanie
-        #   qwen3-32b      - gesty, rozumowanie
-        #   gemma-4-31b    - multimodalny (obrazy)
-        model: ${LLM_MODEL:qwen3-30b-a3b}
+        model: ${LLM_MODEL:ft-qwen3.6-35b-a3b}
         reasoning-effort: none
         max-tokens: 4096
         temperature: 0.2
       embedding:
-        model: ${LLM_EMBED_MODEL:embed}
-    anthropic:
-      # bez klucza endpointy /providers/anthropic/* zwracaja komunikat zamiast odpowiedzi
-      api-key: ${ANTHROPIC_API_KEY:}
-      chat:
-        model: ${ANTHROPIC_MODEL:claude-opus-5}
+        model: ${LLM_EMBED_MODEL:embed-bge-m3}
+        # OpenAiEmbeddingModel embeds Document.getFormattedContent(metadataMode), and the default
+        # EMBED mode prepends every metadata key - file name, page number, content_hash - to the
+        # text. NONE embeds the text alone; the section title is already part of it.
+        metadata-mode: NONE
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        table-name: spring_docs_vector_store
     chat:
-      # obserwacje Spring AI (Micrometer) - tresc promptow/odpowiedzi tylko na potrzeby dev/szkolenia
-      client:
-        observations:
-          log-prompt: true
-          log-completion: true
-      observations:
-        log-prompt: true
-        log-completion: true
-        include-error-logging: true
       memory:
         repository:
           jdbc:
             initialize-schema: always
-    tools:
-      observations:
-        include-content: true
-      limits:
-        max-calls-per-tool:
-          DateTimeTool: 3
-        max-total-tool-calls: 5
-        on-limit-exceeded: return_error_response
-    mcp:
-      client:
-#        stdio:
-#          servers-configuration: classpath:mcp-servers-config.json
-        streamable-http:
-          connections:
-            mcp-server:
-              url: http://localhost:8090
-              endpoint: /mcp
-            mcp-search:
-              url: ${MCP_SEARCH_URL:https://mcp-search.klasawchmurze.pl}
-              endpoint: /mcp
-    vectorstore:
-      observations:
-        log-query-response: true
-      pgvector:
-        # dimensions: ${LLM_EMBED_DIM:768}
-        # nomic-embed-text  -> 768
-        # bge-m3            -> 1024
-        # text-embedding-3-small (OpenAI) -> 1536
-        initialize-schema: true
-        # index-type: HNSW
-        # distance-type: COSINE_DISTANCE
-
   datasource:
     url: jdbc:postgresql://localhost:5432/training
     username: admin
     password: admin
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
-  observations:
-    key-values:
-      application: springai
-  tracing:
-    sampling:
-      probability: 1.0
-  # eksport OTLP do kontenera grafana/otel-lgtm (docker-compose.yml)
-  opentelemetry:
-    tracing:
-      export:
-        otlp:
-          endpoint: ${OTLP_ENDPOINT:http://localhost:4318}/v1/traces
-    logging:
-      export:
-        otlp:
-          endpoint: ${OTLP_ENDPOINT:http://localhost:4318}/v1/logs
-  otlp:
-    metrics:
-      export:
-        url: ${OTLP_ENDPOINT:http://localhost:4318}/v1/metrics
-        step: 10s
+
+app:
+  rag:
+    documents-location: classpath:documents/*.pdf
+    # Every retrieved chunk (about one manual page) ends up in the prompt: fewer chunks give the
+    # model too little to write a complete answer from, more start to add unrelated pages.
+    top-k: 8
+    similarity-threshold: 0.5
+    chunk-size: 800
+    max-history-messages: 10
+
 logging:
   level:
-    org.springframework.ai.chat.client.advisor: DEBUG
-    pl.training.springai.advisor: DEBUG
-    io.modelcontextprotocol: DEBUG
-mcp-search:
-  token: ${MCP_SEARCH_TOKEN}
+    pl.training.springai: INFO
+server:
+  port: 9000

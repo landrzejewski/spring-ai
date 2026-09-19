@@ -12,14 +12,12 @@
     </parent>
 
     <groupId>pl.training</groupId>
-    <artifactId>springai</artifactId>
+    <artifactId>spring-ai</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <properties>
         <java.version>25</java.version>
         <spring-ai.version>2.0.1</spring-ai.version>
-        <!-- linia 2.28.x instrumentation odpowiada OpenTelemetry 1.62 zarzadzanemu przez Spring Boot 4.1 -->
-        <opentelemetry-instrumentation.version>2.28.1-alpha</opentelemetry-instrumentation.version>
     </properties>
 
     <build>
@@ -54,32 +52,7 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-model-ollama</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-model-anthropic</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-model-chat-memory-repository-jdbc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-mcp-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-rag</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-vector-store-advisor</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.ai</groupId>
@@ -87,33 +60,16 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-chat-memory-repository-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-pdf-document-reader</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-tika-document-reader</artifactId>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-markdown-document-reader</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-jsoup-document-reader</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-opentelemetry</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry.instrumentation</groupId>
-            <artifactId>opentelemetry-logback-appender-1.0</artifactId>
-            <version>${opentelemetry-instrumentation.version}</version>
-        </dependency>
-   </dependencies>
+    </dependencies>
 
 </project>
