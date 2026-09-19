@@ -1,5 +1,6 @@
 package pl.training.controllers;
 
+import io.micrometer.observation.ObservationRegistry;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.document.Document;
@@ -47,12 +48,14 @@ public class RagController {
     private final SimpleVectorStore simpleVectorStore;
     private final PgVectorStore pgVectorStore;
     private final AppConfig appConfig;
+    private final ObservationRegistry observationRegistry;
 
-    public RagController(@Qualifier("ollamaChatModel") ChatModel chatModel, SimpleVectorStore simpleVectorStore, PgVectorStore pgVectorStore, AppConfig appConfig) {
+    public RagController(@Qualifier("ollamaChatModel") ChatModel chatModel, SimpleVectorStore simpleVectorStore, PgVectorStore pgVectorStore, AppConfig appConfig, ObservationRegistry observationRegistry) {
         this.chatModel = chatModel;
         this.simpleVectorStore = simpleVectorStore;
         this.pgVectorStore = pgVectorStore;
         this.appConfig = appConfig;
+        this.observationRegistry = observationRegistry;
     }
 
     @PostMapping("init-pgvector")
@@ -73,7 +76,7 @@ public class RagController {
         var retrieverAdvisor = RetrievalAugmentationAdvisor.builder()
                 .documentRetriever(retriever)
                 .build();
-        return ChatClient.builder(chatModel)
+        return ChatClient.builder(chatModel, observationRegistry, null, null)
                 .defaultAdvisors(retrieverAdvisor)
                 .build()
                 .prompt()
@@ -96,7 +99,7 @@ public class RagController {
             @RequestParam(defaultValue = "simple") String storeType) {
         var store = getVectorStore(storeType);
         var queryExpander = MultiQueryExpander.builder()
-                .chatClientBuilder(ChatClient.builder(chatModel))
+                .chatClientBuilder(ChatClient.builder(chatModel, observationRegistry, null, null))
                 .numberOfQueries(3)
                 .includeOriginal(true)
                 .build();
@@ -105,7 +108,7 @@ public class RagController {
                 .documentRetriever(retriever)
                 .queryExpander(queryExpander)
                 .build();
-        return ChatClient.builder(chatModel)
+        return ChatClient.builder(chatModel, observationRegistry, null, null)
                 .defaultAdvisors(retrievalAdvisor)
                 .build()
                 .prompt()
@@ -122,7 +125,7 @@ public class RagController {
             @RequestBody PromptRequest promptRequest,
             @RequestParam(defaultValue = "simple") String storeType) {
         var store = getVectorStore(storeType);
-        var chatClient = ChatClient.builder(chatModel);
+        var chatClient = ChatClient.builder(chatModel, observationRegistry, null, null);
         var rewriteTransformer = RewriteQueryTransformer.builder()
                 .chatClientBuilder(chatClient)
                 .build();
@@ -135,7 +138,7 @@ public class RagController {
                 .documentRetriever(retriever)
                 .queryTransformers(rewriteTransformer,  translationTransformer)
                 .build();
-        return ChatClient.builder(chatModel)
+        return ChatClient.builder(chatModel, observationRegistry, null, null)
                 .defaultAdvisors(retrievalAdvisor)
                 .build()
                 .prompt()
@@ -174,7 +177,7 @@ public class RagController {
               %s
                """.formatted(context);
 
-        return ChatClient.builder(chatModel).build()
+        return ChatClient.builder(chatModel, observationRegistry, null, null).build()
                 .prompt()
                 .user(promptRequest.userPromptText())
                 .system(systemMessage)
@@ -235,7 +238,7 @@ public class RagController {
         var store = getVectorStore(storeType);
 
         var queryExpander = MultiQueryExpander.builder()
-                .chatClientBuilder(ChatClient.builder(chatModel))
+                .chatClientBuilder(ChatClient.builder(chatModel, observationRegistry, null, null))
                 .numberOfQueries(3)
                 .includeOriginal(true)
                 .build();
@@ -253,7 +256,7 @@ public class RagController {
 
         var retrievalAdvisor = RetrievalAugmentationAdvisor.builder()
                 .queryTransformers(RewriteQueryTransformer.builder()
-                        .chatClientBuilder(ChatClient.builder(chatModel))
+                        .chatClientBuilder(ChatClient.builder(chatModel, observationRegistry, null, null))
                         .build())
                 .queryExpander(queryExpander)
                 .documentRetriever(getVectorStoreRetriever(store, DEFAULT_TOP_K, DEFAULT_SIMILARITY_THRESHOLD))
@@ -262,7 +265,7 @@ public class RagController {
                 .queryAugmenter(queryAugmenter)
                 .build();
 
-        return ChatClient.builder(chatModel)
+        return ChatClient.builder(chatModel, observationRegistry, null, null)
                 .defaultAdvisors(retrievalAdvisor)
                 .build()
                 .prompt()

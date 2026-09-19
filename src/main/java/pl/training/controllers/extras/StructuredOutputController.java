@@ -1,18 +1,20 @@
 package pl.training.controllers.extras;
 
+import io.micrometer.observation.ObservationRegistry;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.converter.*;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.util.JacksonUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
-import pl.training.springai.model.PromptRequest;
-import pl.training.springai.model.SentimentResult;
-import pl.training.springai.model.SummaryResult;
-import pl.training.springai.model.TranslationResult;
+import pl.training.model.PromptRequest;
+import pl.training.model.SentimentResult;
+import pl.training.model.SummaryResult;
+import pl.training.model.TranslationResult;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * Structured output turns a free-text completion into a typed Java object. Spring AI offers three
@@ -27,6 +29,8 @@ import java.util.regex.Pattern;
  *   <li><b>Validated with self-correction</b> - {@code validateSchema()} checks the reply against
  *       the schema and, on a mismatch, sends the errors back to the model and retries.</li>
  * </ol>
+ * The ChatClient is built here without the memory advisor of the primary bean: extraction calls
+ * are stateless, and replaying an unrelated conversation would only distort the result.
  */
 @RestController
 @RequestMapping("structured")
@@ -35,15 +39,18 @@ public class StructuredOutputController {
     private final ChatClient chatClient;
     private final ChatClient ollamaChatClient;
 
-    public StructuredOutputController(ChatClient chatClient,
-                                      @Qualifier("ollamaChatClient") ChatClient ollamaChatClient) {
-        this.chatClient = chatClient;
+    public StructuredOutputController(OpenAiChatModel chatModel,
+                                      @Qualifier("ollamaChatClient") ChatClient ollamaChatClient,
+                                      ObservationRegistry observationRegistry) {
+        this.chatClient = ChatClient.builder(chatModel, observationRegistry, null, null).build();
         this.ollamaChatClient = ollamaChatClient;
     }
 
     /**
      * The baseline. BeanOutputConverter reflects over the record, generates a JSON schema and
-     * appends it to the prompt; the reply is then deserialized into the record.
+     * appends it to the prompt; the reply is then deserialized into the record. It is the same
+     * mechanism as /chat-with-structured-response - here as the reference point for the native
+     * variant below.
      */
     @PostMapping("sentiment")
     public SentimentResult sentiment(@RequestBody PromptRequest promptRequest) {
@@ -83,8 +90,9 @@ public class StructuredOutputController {
      * code succeed on the first attempt.
      * <p>
      * A caveat worth seeing on a small model: the mechanism can work and the answer still be
-     * useless. Bielik-1.5B returns well-formed JSON with null fields here - schema validation is
-     * about shape, not about substance.
+     * useless. qwen3:0.6b wraps its reply in a &lt;think&gt; block (removed by ThinkingTagCleaner)
+     * and can return well-formed JSON with a summary that is barely a summary - schema validation
+     * is about shape, not about substance.
      */
     @PostMapping("summary-validated")
     public SummaryResult summaryValidated(@RequestBody PromptRequest promptRequest,
@@ -131,26 +139,27 @@ public class StructuredOutputController {
      * responsibilities - getFormat() supplies the instructions injected into the prompt, convert()
      * parses the reply.
      * <p>
-     * For the fence-stripping shown here the built-in MarkdownCodeBlockCleaner is the better
-     * answer (see summaryValidated above). Write a converter only when the output format itself is
-     * not JSON, or when the parsing needs logic no cleaner can express.
+     * Worth writing only when the output format itself is not JSON - a stray ```json fence or a
+     * &lt;think&gt; block is a job for a ResponseTextCleaner (see summaryValidated above). Here the
+     * model is asked for plain "key: value" lines, which even a small model gets right far more
+     * often than a JSON document, and which no JSON-based converter can parse.
      */
-    @PostMapping("translation-lenient")
-    public TranslationResult translationLenient(@RequestBody PromptRequest promptRequest,
-                                                @RequestParam(defaultValue = "ollama") String provider) {
+    @PostMapping("translation-custom")
+    public TranslationResult translationCustom(@RequestBody PromptRequest promptRequest,
+                                               @RequestParam(defaultValue = "ollama") String provider) {
         return client(provider).prompt()
                 .user(spec -> spec
                         .text("Translate the following text into English: {text}")
                         .param("text", promptRequest.userPromptText()))
                 .call()
-                .entity(new LenientJsonOutputConverter<>(TranslationResult.class));
+                .entity(new KeyValueTranslationConverter());
     }
 
     /**
      * Shows what entity() hides: the schema that gets appended to the prompt. Useful when a model
      * keeps producing the wrong shape and you need to see what it was actually told.
      */
-    @PostMapping("schema")
+    @GetMapping("schema")
     public Map<String, String> schema() {
         var converter = new BeanOutputConverter<>(SummaryResult.class);
         return Map.of(
@@ -163,31 +172,33 @@ public class StructuredOutputController {
         return "openai".equals(provider) ? chatClient : ollamaChatClient;
     }
 
-    static class LenientJsonOutputConverter<T> implements StructuredOutputConverter<T> {
+    static class KeyValueTranslationConverter implements StructuredOutputConverter<TranslationResult> {
 
-        private static final Pattern FENCE = Pattern.compile("```(?:json)?\\s*([\\s\\S]*?)```");
-
-        private final BeanOutputConverter<T> delegate;
-
-        LenientJsonOutputConverter(Class<T> targetType) {
-            this.delegate = new BeanOutputConverter<>(targetType);
-        }
+        private final ThinkingTagCleaner cleaner = new ThinkingTagCleaner();
 
         @Override
         public String getFormat() {
-            return delegate.getFormat();
+            return """
+                    Respond with exactly three lines and nothing else:
+                    translatedText: <the translation>
+                    sourceLanguage: <the language of the original text>
+                    targetLanguage: <the language of the translation>
+                    """;
         }
 
         @Override
-        public String getJsonSchema() {
-            return delegate.getJsonSchema();
-        }
-
-        @Override
-        public T convert(String source) {
-            var matcher = FENCE.matcher(source);
-            var json = matcher.find() ? matcher.group(1).trim() : source.trim();
-            return delegate.convert(json);
+        public TranslationResult convert(String source) {
+            var values = new HashMap<String, String>();
+            for (var line : String.valueOf(cleaner.clean(source)).lines().toList()) {
+                var separator = line.indexOf(':');
+                if (separator > 0) {
+                    values.put(line.substring(0, separator).trim(), line.substring(separator + 1).trim());
+                }
+            }
+            return new TranslationResult(
+                    values.get("translatedText"),
+                    values.get("sourceLanguage"),
+                    values.get("targetLanguage"));
         }
 
     }

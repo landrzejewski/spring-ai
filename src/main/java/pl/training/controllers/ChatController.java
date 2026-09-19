@@ -1,5 +1,6 @@
 package pl.training.controllers;
 
+import io.micrometer.observation.ObservationRegistry;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -11,6 +12,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.converter.MapOutputConverter;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.tool.function.FunctionToolCallback;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -33,11 +35,16 @@ import java.util.stream.Collectors;
 @RestController
 public class ChatController {
 
+    // Stateless examples use a client without memory. The primary ChatClient bean carries
+    // MessageChatMemoryAdvisor, which since Spring AI 2.0 requires a conversation id on every
+    // request - it is used only by the endpoints that take a userId.
     private final ChatClient chatClient;
+    private final ChatClient memoryChatClient;
     private final ChatMemory chatMemory;
 
-    public ChatController(ChatClient chatClient, ChatMemory chatMemory) {
-        this.chatClient = chatClient;
+    public ChatController(OpenAiChatModel chatModel, ChatClient memoryChatClient, ChatMemory chatMemory, ObservationRegistry observationRegistry) {
+        this.chatClient = ChatClient.builder(chatModel, observationRegistry, null, null).build();
+        this.memoryChatClient = memoryChatClient;
         this.chatMemory = chatMemory;
     }
 
@@ -265,7 +272,7 @@ public class ChatController {
             @RequestBody PromptRequest promptRequest,
             @PathVariable String userId
     ) {
-        return chatClient.prompt()
+        return memoryChatClient.prompt()
                 .user(promptRequest.userPromptText())
                 .advisors(spec -> spec
                         .param(ChatMemory.CONVERSATION_ID, userId)
@@ -298,7 +305,7 @@ public class ChatController {
                 .inputType(DoubleValue.class)
                 .build();
 
-        return chatClient.prompt()
+        return memoryChatClient.prompt()
                 .tools(new DateTimeTool(), callbacks)
                 .toolContext(Map.of("userId", "12345"))
                 .user(promptRequest.userPromptText())

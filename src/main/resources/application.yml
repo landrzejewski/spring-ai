@@ -1,4 +1,9 @@
 spring:
+  application:
+    name: springai
+  reactor:
+    # przenosi kontekst obserwacji (trace) do operatorow Flux - bez tego spany streamingu trafiaja do osobnych trace'ow
+    context-propagation: auto
   ai:
     ollama:
       chat:
@@ -6,6 +11,10 @@ spring:
       init:
         pull-model-strategy: when_missing
         max-retries: 3
+        chat:
+          # sedzia bezpieczenstwa dla SafetyAdvisor i ModerationModel (pl.training.moderation)
+          additional-models:
+            - speakleash/bielik-11b-v2.3-instruct:Q4_K_M
       embedding:
         model: bge-m3
     openai:
@@ -30,12 +39,28 @@ spring:
         temperature: 0.2
       embedding:
         model: ${LLM_EMBED_MODEL:embed}
+    anthropic:
+      # bez klucza endpointy /providers/anthropic/* zwracaja komunikat zamiast odpowiedzi
+      api-key: ${ANTHROPIC_API_KEY:}
+      chat:
+        model: ${ANTHROPIC_MODEL:claude-opus-5}
     chat:
+      # obserwacje Spring AI (Micrometer) - tresc promptow/odpowiedzi tylko na potrzeby dev/szkolenia
+      client:
+        observations:
+          log-prompt: true
+          log-completion: true
+      observations:
+        log-prompt: true
+        log-completion: true
+        include-error-logging: true
       memory:
         repository:
           jdbc:
             initialize-schema: always
     tools:
+      observations:
+        include-content: true
       limits:
         max-calls-per-tool:
           DateTimeTool: 3
@@ -54,6 +79,8 @@ spring:
               url: ${MCP_SEARCH_URL:https://mcp-search.klasawchmurze.pl}
               endpoint: /mcp
     vectorstore:
+      observations:
+        log-query-response: true
       pgvector:
         # dimensions: ${LLM_EMBED_DIM:768}
         # nomic-embed-text  -> 768
@@ -67,6 +94,32 @@ spring:
     url: jdbc:postgresql://localhost:5432/training
     username: admin
     password: admin
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  observations:
+    key-values:
+      application: springai
+  tracing:
+    sampling:
+      probability: 1.0
+  # eksport OTLP do kontenera grafana/otel-lgtm (docker-compose.yml)
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${OTLP_ENDPOINT:http://localhost:4318}/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: ${OTLP_ENDPOINT:http://localhost:4318}/v1/logs
+  otlp:
+    metrics:
+      export:
+        url: ${OTLP_ENDPOINT:http://localhost:4318}/v1/metrics
+        step: 10s
 logging:
   level:
     org.springframework.ai.chat.client.advisor: DEBUG

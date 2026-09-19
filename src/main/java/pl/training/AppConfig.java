@@ -1,5 +1,6 @@
 package pl.training;
 
+import io.micrometer.observation.ObservationRegistry;
 import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -12,6 +13,7 @@ import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryReposito
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.mcp.customizer.McpClientCustomizer;
+import org.springframework.ai.moderation.ModerationModel;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.ai.openai.OpenAiChatModel;
@@ -23,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.Resource;
+import pl.training.advisors.SafetyAdvisor;
 
 import javax.sql.DataSource;
 import java.net.http.HttpRequest;
@@ -34,8 +37,9 @@ public class AppConfig {
 
     @Primary
     @Bean
-    public ChatClient openAiChatClient(OpenAiChatModel chatModel, ChatMemory  chatMemory) {
-        return ChatClient.builder(chatModel)
+    public ChatClient openAiChatClient(OpenAiChatModel chatModel, ChatMemory  chatMemory, ObservationRegistry observationRegistry) {
+        // ChatClient.builder(chatModel) uzywa ObservationRegistry.NOOP - bez rejestru nie ma spanow/metryk ChatClient i advisorow
+        return ChatClient.builder(chatModel, observationRegistry, null, null)
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
                 //.defaultOptions()
                 //.defaultTools()
@@ -43,8 +47,8 @@ public class AppConfig {
     }
 
     @Bean
-    public ChatClient ollamaChatClient(OllamaChatModel chatModel) {
-        return ChatClient.builder(chatModel)
+    public ChatClient ollamaChatClient(OllamaChatModel chatModel, ObservationRegistry observationRegistry) {
+        return ChatClient.builder(chatModel, observationRegistry, null, null)
                 .build();
     }
 
@@ -65,6 +69,14 @@ public class AppConfig {
                 .dataSource(dataSource)
                 .dialect(JdbcChatMemoryRepositoryDialect.from(dataSource))
                 .build();
+    }
+
+    // @Primary, bo autokonfiguracja OpenAI i tak tworzy OpenAiModerationModel (warunek dotyczy tylko jej typu),
+    // a proxy litellm nie obsluguje endpointu /moderations
+    @Primary
+    @Bean
+    public ModerationModel moderationModel(OllamaChatModel chatModel) {
+        return new pl.training.moderation.ModerationModel(chatModel, SafetyAdvisor.DEFAULT_MODEL);
     }
 
     @Bean

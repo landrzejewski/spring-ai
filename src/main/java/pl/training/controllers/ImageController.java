@@ -1,9 +1,12 @@
 package pl.training.controllers;
 
+import io.micrometer.observation.ObservationRegistry;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.image.ImageModel;
 import org.springframework.ai.image.ImageOptionsBuilder;
 import org.springframework.ai.image.ImagePrompt;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -20,11 +23,13 @@ import java.util.Base64;
 public class ImageController {
 
     private final ImageModel imageModel;
-    private final ChatClient  chatClient;
+    private final ChatClient chatClient;
 
-    public ImageController(ImageModel imageModel, ChatClient chatClient) {
+    public ImageController(ImageModel imageModel, OpenAiChatModel chatModel, ObservationRegistry observationRegistry) {
         this.imageModel = imageModel;
-        this.chatClient = chatClient;
+        // no memory - describing an image is a one-off request, and the primary ChatClient's
+        // memory advisor would require a conversation id
+        this.chatClient = ChatClient.builder(chatModel, observationRegistry, null, null).build();
     }
 
     /**
@@ -66,8 +71,10 @@ public class ImageController {
                 .prompt()
                 .user(spec -> spec
                         .text(promptRequest.userPromptText())
-                        .media(MediaType.IMAGE_PNG, image)
+                        .media(MediaType.IMAGE_JPEG, image)
                 )
+                // the default model (qwen3-30b-a3b) is text-only - image input needs a multimodal one
+                .options(ChatOptions.builder().model("gemma-4-31b"))
                 .call()
                 .content();
     }

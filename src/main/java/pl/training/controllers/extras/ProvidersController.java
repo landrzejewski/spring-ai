@@ -1,19 +1,27 @@
 package pl.training.controllers.extras;
 
-import com.anthropic.models.messages.ThinkingConfigEnabled;
+import com.anthropic.models.messages.OutputConfig;
+import com.anthropic.models.messages.ThinkingConfigAdaptive;
+import io.micrometer.context.ContextExecutorService;
+import io.micrometer.observation.ObservationRegistry;
 import org.springframework.ai.anthropic.*;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.training.model.PromptRequest;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -30,7 +38,13 @@ import java.util.concurrent.TimeUnit;
  * went from 500 to 4096.
  * <p>
  * The Anthropic beans are optional: without an API key the module is not usable and these
- * endpoints report that instead of failing at startup.
+ * endpoints report that instead of failing at startup. The model is set in application.yml
+ * (spring.ai.anthropic.chat.options.model) - the Spring AI default, Haiku 4.5, supports neither
+ * adaptive thinking nor the web search tool variant used below.
+ * <p>
+ * One trap worth knowing: with extended thinking every thinking block becomes a Generation of its
+ * own, placed <em>before</em> the answer. getResult() returns the first Generation, so on a
+ * thinking model it returns the reasoning, not the answer - hence {@link #answer(ChatResponse)}.
  */
 @RestController
 @RequestMapping("providers")
@@ -40,15 +54,18 @@ public class ProvidersController {
     private final OllamaChatModel ollamaChatModel;
     private final ObjectProvider<AnthropicChatModel> anthropicChatModel;
     private final boolean anthropicConfigured;
+    private final ObservationRegistry observationRegistry;
 
     public ProvidersController(OpenAiChatModel openAiChatModel,
                                OllamaChatModel ollamaChatModel,
                                ObjectProvider<AnthropicChatModel> anthropicChatModel,
-                               @Value("${spring.ai.anthropic.api-key:}") String anthropicApiKey) {
+                               @Value("${spring.ai.anthropic.api-key:}") String anthropicApiKey,
+                               ObservationRegistry observationRegistry) {
         this.openAiChatModel = openAiChatModel;
         this.ollamaChatModel = ollamaChatModel;
         this.anthropicChatModel = anthropicChatModel;
         this.anthropicConfigured = anthropicApiKey != null && !anthropicApiKey.isBlank();
+        this.observationRegistry = observationRegistry;
     }
 
     /**
@@ -65,7 +82,8 @@ public class ProvidersController {
             anthropicChatModel.ifAvailable(model -> models.put("anthropic", model));
         }
 
-        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+        // ContextExecutorService przenosi biezacy trace do watkow wirtualnych - inaczej spany modeli trafiaja do osobnych trace'ow
+        try (var executor = ContextExecutorService.wrap(Executors.newVirtualThreadPerTaskExecutor())) {
             var futures = new LinkedHashMap<String, java.util.concurrent.Future<Map<String, Object>>>();
             models.forEach((name, model) -> futures.put(name, executor.submit(() -> ask(model, promptRequest))));
             futures.forEach((name, future) -> {
@@ -82,14 +100,14 @@ public class ProvidersController {
 
     private Map<String, Object> ask(ChatModel model, PromptRequest promptRequest) {
         var start = System.currentTimeMillis();
-        var response = ChatClient.builder(model).build()
+        var response = ChatClient.builder(model, observationRegistry, null, null).build()
                 .prompt(promptRequest.userPromptText())
                 .call()
                 .chatResponse();
         var usage = response.getMetadata().getUsage();
         return Map.of(
                 "model", String.valueOf(response.getMetadata().getModel()),
-                "answer", response.getResult().getOutput().getText(),
+                "answer", answer(response),
                 "totalTokens", usage == null ? -1 : usage.getTotalTokens(),
                 "durationMs", System.currentTimeMillis() - start);
     }
@@ -101,14 +119,21 @@ public class ProvidersController {
      * <p>
      * AnthropicCacheStrategy decides what gets a cache breakpoint: SYSTEM_ONLY, TOOLS_ONLY,
      * SYSTEM_AND_TOOLS or CONVERSATION_HISTORY. Send the same request twice and compare the
-     * cacheReadInputTokens in the usage metadata - the second call should read from the cache.
+     * counters: the first call writes the cache (cacheWriteInputTokens), the second reads it
+     * (cacheReadInputTokens) - both are exposed by the portable Usage since Spring AI 2.0.
+     * <p>
+     * A prefix shorter than the model minimum is silently not cached - no error, just zeros. The
+     * minimum is 512 tokens on Claude Opus 5, 1024 on Sonnet 5 and 4096 on Haiku 4.5, which is why
+     * the system message carries the whole books catalog and not just a few notes.
      */
     @PostMapping("anthropic/prompt-caching")
     public Map<String, Object> promptCaching(@RequestBody PromptRequest promptRequest) {
         return withAnthropic(model -> {
-            var response = ChatClient.builder(model).build()
+            var response = ChatClient.builder(model, observationRegistry, null, null).build()
                     .prompt()
-                    .system(LONG_SYSTEM_MESSAGE)
+                    .system(spec -> spec
+                            .text(SYSTEM_MESSAGE)
+                            .param("catalog", booksCatalogText()))
                     .user(promptRequest.userPromptText())
                     .options(AnthropicChatOptions.builder()
                             .cacheOptions(AnthropicCacheOptions.builder()
@@ -116,29 +141,44 @@ public class ProvidersController {
                                     .build()))
                     .call()
                     .chatResponse();
+            var usage = response.getMetadata().getUsage();
             return Map.of(
-                    "answer", response.getResult().getOutput().getText(),
-                    // The native usage carries the cache counters that the portable Usage does not
-                    "usage", String.valueOf(response.getMetadata().getUsage().getNativeUsage()));
+                    "answer", answer(response),
+                    "promptTokens", usage.getPromptTokens(),
+                    "cacheWriteInputTokens", String.valueOf(usage.getCacheWriteInputTokens()),
+                    "cacheReadInputTokens", String.valueOf(usage.getCacheReadInputTokens()));
         });
     }
 
     /**
-     * Extended thinking. The model is given a token budget to reason before answering, and Display
-     * decides whether the reasoning is returned: SUMMARIZED sends back a summary of it, OMITTED
-     * hides it entirely while still spending the budget.
+     * Extended thinking. On current Claude models it is <em>adaptive</em>: the model decides
+     * whether and how much to reason, and the effort level (LOW .. MAX) steers the depth and the
+     * token spend. The fixed budget from earlier versions - thinkingEnabled(budgetTokens) - is
+     * rejected with a 400 by Claude Opus 5 and Sonnet 5; it still works only on older models.
+     * <p>
+     * Display decides whether the reasoning is returned: SUMMARIZED sends back a summary of it,
+     * OMITTED (the default) returns empty thinking blocks while still spending the tokens.
      */
     @PostMapping("anthropic/thinking")
     public Map<String, Object> thinking(@RequestBody PromptRequest promptRequest) {
         return withAnthropic(model -> {
-            var response = ChatClient.builder(model).build()
+            var response = ChatClient.builder(model, observationRegistry, null, null).build()
                     .prompt(promptRequest.userPromptText())
                     .options(AnthropicChatOptions.builder()
-                            .maxTokens(8000)
-                            .thinkingEnabled(4000, ThinkingConfigEnabled.Display.SUMMARIZED))
+                            .maxTokens(16000)
+                            .thinkingAdaptive(ThinkingConfigAdaptive.Display.SUMMARIZED)
+                            .effort(OutputConfig.Effort.HIGH))
                     .call()
                     .chatResponse();
-            return Map.of("answer", response.getResult().getOutput().getText());
+            // thinking blocks are the generations that carry a signature
+            var thinking = response.getResults().stream()
+                    .map(Generation::getOutput)
+                    .filter(message -> message.getMetadata().containsKey("signature"))
+                    .map(message -> String.valueOf(message.getText()))
+                    .toList();
+            return Map.of(
+                    "thinking", thinking,
+                    "answer", answer(response));
         });
     }
 
@@ -150,18 +190,18 @@ public class ProvidersController {
     @PostMapping("anthropic/web-search")
     public Map<String, Object> webSearch(@RequestBody PromptRequest promptRequest) {
         return withAnthropic(model -> {
-            var response = ChatClient.builder(model).build()
+            var response = ChatClient.builder(model, observationRegistry, null, null).build()
                     .prompt(promptRequest.userPromptText())
                     .options(AnthropicChatOptions.builder()
-                            .maxTokens(4096)
+                            .maxTokens(16000)
                             .webSearchTool(AnthropicWebSearchTool.builder()
                                     .maxUses(3L)
                                     .build())
-                            // STANDARD_ONLY refuses the cheaper, best-effort capacity tier
+                            // AUTO uses Priority Tier capacity when the organization has it, STANDARD_ONLY never does
                             .serviceTier(AnthropicServiceTier.AUTO))
                     .call()
                     .chatResponse();
-            return Map.of("answer", response.getResult().getOutput().getText());
+            return Map.of("answer", answer(response));
         });
     }
 
@@ -173,8 +213,30 @@ public class ProvidersController {
         return action.apply(model);
     }
 
-    private static final String LONG_SYSTEM_MESSAGE = """
-            You are a Spring AI training assistant. Answer strictly about the Spring AI framework.
+    /**
+     * The answer is the last Generation - any thinking blocks come before it.
+     */
+    private static String answer(ChatResponse response) {
+        return String.valueOf(response.getResults().getLast().getOutput().getText());
+    }
+
+    @Value("classpath:books-catalog.json")
+    private Resource booksCatalog;
+
+    private String booksCatalogText() {
+        try {
+            return booksCatalog.getContentAsString(StandardCharsets.UTF_8);
+        }
+        catch (IOException exception) {
+            throw new IllegalStateException(exception);
+        }
+    }
+
+    // The catalog is static, so the whole system message is an identical prefix on every call.
+    // Anything that varies (a timestamp, a user id) would have to go after it, or nothing is cached.
+    private static final String SYSTEM_MESSAGE = """
+            You are a Spring AI training assistant and the librarian of the training library.
+            Answer questions about the Spring AI framework and recommend books only from the catalog below.
 
             Reference notes:
             ChatModel is the low-level provider abstraction; ChatClient is the fluent facade adding
@@ -193,6 +255,9 @@ public class ProvidersController {
             keeps large tool sets out of the prompt.
             Observability is provided by Micrometer observations: gen_ai.* metrics and spans for
             every model call, tool invocation and vector store operation.
+
+            Books catalog (JSON):
+            {catalog}
             """;
 
 }

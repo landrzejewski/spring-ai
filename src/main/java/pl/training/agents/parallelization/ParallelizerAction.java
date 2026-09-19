@@ -1,5 +1,6 @@
 package pl.training.agents.parallelization;
 
+import io.micrometer.context.ContextExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.training.agents.Action;
@@ -106,7 +107,8 @@ public class ParallelizerAction<I, O> implements Action<I, O> {
     public static class Builder<I, O> {
         private final List<ParallelTask<I, ?>> tasks = new ArrayList<>();
         private final Function<List<Object>, O> aggregator;
-        private ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        // wrap przenosi kontekst obserwacji (trace) do watkow wykonujacych zadania
+        private ExecutorService executor = ContextExecutorService.wrap(Executors.newVirtualThreadPerTaskExecutor());
 
         public Builder(Function<List<Object>, O> aggregator) {
             this.aggregator = aggregator;

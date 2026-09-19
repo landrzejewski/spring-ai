@@ -1,5 +1,6 @@
 package pl.training.agents;
 
+import io.micrometer.observation.ObservationRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -82,8 +83,8 @@ public class AgentsController {
     private final Orchestrator projectOrchestrator;
     private final EvaluatorOptimizer codeOptimizer;
 
-    public AgentsController(OpenAiChatModel chatModel) {
-        this.chatClient = ChatClient.builder(chatModel).build();
+    public AgentsController(OpenAiChatModel chatModel, ObservationRegistry observationRegistry) {
+        this.chatClient = ChatClient.builder(chatModel, observationRegistry, null, null).build();
 
         // Prompt chaining: analyse -> improve -> refactor
         this.codeReviewChain = buildCodeReviewChain();
