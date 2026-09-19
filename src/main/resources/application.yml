@@ -24,21 +24,27 @@ spring:
 #        max-tokens: 4096
 #        temperature: 0.1
 
-      base-url: https://ai.klasawchmurze.pl
-      api-key: ${LLM_API_KEY}
+      # Port 11435, a nie domyslne 11434, bo tam siedzi lokalna Ollama (zakladka Proxies w nvpair).
+      # UWAGA: /v1 w base-url jest obowiazkowe. Spring AI 2.x opiera sie na SDK com.openai,
+      # ktore dokleja samo /chat/completions - bez /v1 dostajemy 404 mimo dzialajacego serwera.
+      base-url: ${PAIR_BASE_URL:http://127.0.0.1:11434/v1}
+      api-key: ${PAIR_API_KEY:not-needed}
       chat:
-        # Nazwy modeli z litellm-config.yaml:
-        #   qwen38-27b     - kodowanie, najlepsza jakosc w VRAM
-        #   qwen3-30b-a3b  - najszybszy (390 t/s), 64k kontekstu
-        #   glm-4.7-flash  - agenty, narzedzia, wyszukiwanie
-        #   qwen3-32b      - gesty, rozumowanie
-        #   gemma-4-31b    - multimodalny (obrazy)
-        model: ${LLM_MODEL:qwen3-30b-a3b}
+        # Nazwy modeli z `curl http://127.0.0.1:11435/v1/models` (inwentarz calego klastra),
+        # capabilities z `curl http://127.0.0.1:11435/api/tags`:
+        #   gemma4:26b  - najwieksza jakosc, vision+audio+tools+thinking
+        #   gemma4:12b  - kompromis jakosc/szybkosc, tools + thinking
+        #   gemma4:e4b  - najszybszy z tools
+        #   speakleash/bielik-minitron-7B-v3.0-instruct:Q4_K_M - PL, ma tools
+        #   speakleash/bielik-11b-v2.3-instruct:Q4_K_M         - PL, BEZ tools (samo completion)
+        model: ${LLM_MODEL:gemma4:12b}
+        # bez tego gemma4 przepala budzet tokenow na rozumowanie i zwraca pusta tresc
         reasoning-effort: none
         max-tokens: 4096
         temperature: 0.2
       embedding:
-        model: ${LLM_EMBED_MODEL:embed}
+        # bge-m3 -> 1024 wymiary, zgodne z istniejaca tabela vector_store
+        model: ${LLM_EMBED_MODEL:bge-m3:latest}
     anthropic:
       # bez klucza endpointy /providers/anthropic/* zwracaja komunikat zamiast odpowiedzi
       api-key: ${ANTHROPIC_API_KEY:}
@@ -72,9 +78,9 @@ spring:
 #          servers-configuration: classpath:mcp-servers-config.json
         streamable-http:
           connections:
-            mcp-server:
-              url: http://localhost:8090
-              endpoint: /mcp
+#            mcp-server:
+#              url: http://localhost:8090
+#              endpoint: /mcp
             mcp-search:
               url: ${MCP_SEARCH_URL:https://mcp-search.klasawchmurze.pl}
               endpoint: /mcp
