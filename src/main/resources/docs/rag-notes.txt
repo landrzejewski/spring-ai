@@ -1,0 +1,14 @@
+Chunking strategy notes.
+
+Chunk size is the single most consequential RAG parameter. Chunks that are too small lose the
+context needed to answer, while chunks that are too large dilute the embedding and retrieve
+irrelevant text alongside the relevant part.
+
+A token-based splitter is preferable to a character-based one because the embedding model's
+context limit is expressed in tokens, not characters.
+
+Overlap between consecutive chunks prevents an answer from being split across a boundary.
+
+Metadata attached to a chunk is not embedded. It is stored next to the vector and can be used to
+narrow the similarity search with a filter expression, which is far cheaper than retrieving
+everything and filtering afterwards.

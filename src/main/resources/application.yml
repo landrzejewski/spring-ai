@@ -1,0 +1,76 @@
+spring:
+  ai:
+    ollama:
+      chat:
+        model: qwen3:0.6b
+      init:
+        pull-model-strategy: when_missing
+        max-retries: 3
+      embedding:
+        model: bge-m3
+    openai:
+#      api-key: ${OPENAI_KEY}
+#      chat:
+#        model: gpt-4.1
+#        max-tokens: 4096
+#        temperature: 0.1
+
+      base-url: https://ai.klasawchmurze.pl
+      api-key: ${LLM_API_KEY}
+      chat:
+        # Nazwy modeli z litellm-config.yaml:
+        #   qwen38-27b     - kodowanie, najlepsza jakosc w VRAM
+        #   qwen3-30b-a3b  - najszybszy (390 t/s), 64k kontekstu
+        #   glm-4.7-flash  - agenty, narzedzia, wyszukiwanie
+        #   qwen3-32b      - gesty, rozumowanie
+        #   gemma-4-31b    - multimodalny (obrazy)
+        model: ${LLM_MODEL:qwen3-30b-a3b}
+        reasoning-effort: none
+        max-tokens: 4096
+        temperature: 0.2
+      embedding:
+        model: ${LLM_EMBED_MODEL:embed}
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
+    tools:
+      limits:
+        max-calls-per-tool:
+          DateTimeTool: 3
+        max-total-tool-calls: 5
+        on-limit-exceeded: return_error_response
+    mcp:
+      client:
+#        stdio:
+#          servers-configuration: classpath:mcp-servers-config.json
+        streamable-http:
+          connections:
+            mcp-server:
+              url: http://localhost:8090
+              endpoint: /mcp
+            mcp-search:
+              url: ${MCP_SEARCH_URL:https://mcp-search.klasawchmurze.pl}
+              endpoint: /mcp
+    vectorstore:
+      pgvector:
+        # dimensions: ${LLM_EMBED_DIM:768}
+        # nomic-embed-text  -> 768
+        # bge-m3            -> 1024
+        # text-embedding-3-small (OpenAI) -> 1536
+        initialize-schema: true
+        # index-type: HNSW
+        # distance-type: COSINE_DISTANCE
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/training
+    username: admin
+    password: admin
+logging:
+  level:
+    org.springframework.ai.chat.client.advisor: DEBUG
+    pl.training.springai.advisor: DEBUG
+    io.modelcontextprotocol: DEBUG
+mcp-search:
+  token: ${MCP_SEARCH_TOKEN}

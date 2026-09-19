@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "mcp-server": {
+      "command": "java",
+      "args": [
+        "-jar",
+        "./mcp-server/target/mcp-server.jar"
+      ],
+      "env": {
+      }
+    }
+  }
+}

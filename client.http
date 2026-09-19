@@ -1,0 +1,336 @@
+POST http://localhost:8080/chat
+Content-Type: text/plain
+
+What is Spring AI?
+
+###
+
+POST http://localhost:8080/chat-with-streaming
+Accept: application/stream+json
+Content-Type: text/plain
+
+What is Spring AI?
+
+###
+
+POST http://localhost:8080/chat-with-parametrized-prompt
+Accept: application/stream+json
+
+LLM
+
+###
+
+#POST http://localhost:8080/chat-with-roles-and-external-template?programmingLanguage=python
+POST http://localhost:8080/chat-with-roles-and-external-template
+Accept: application/stream+json
+
+How to start Spring container?
+
+###
+
+POST http://localhost:8080/chat-with-data-extracting-prompt
+Accept: application/json
+
+Extract the key information from the following text delimited by triple backticks and format it in JSON.\n Text : ```Emily Thompson booked a flight on October 10, 2024. She will be flying from New York (JFK) to Los Angeles (LAX) on flight number AA123.The departure time is 8:00 AM, and the arrival time is 11:30 AM. She has a carry-on bag and a checked bag. Her ticket price was $450.00, and she will be seated in 14A.```
+
+####
+
+POST http://localhost:8080/chat-with-structured-response
+Accept: application/json
+
+Give me information about the best fantasy book
+
+###
+
+POST http://localhost:8080/chat-with-structured-list-response
+Accept: application/json
+
+Give me information about five the best fantasy book
+
+###
+
+POST http://localhost:8080/chat-with-structured-map-response
+Accept: application/json
+
+Give me information about the best fantasy books (title and author)
+
+###
+
+POST http://localhost:8080/zero-shot
+Accept: application/stream+json
+
+The item arrived on schedule, but it was broken and didn’t function properly. What is the sentiment of this sentence?
+
+###
+
+POST http://localhost:8080/few-shot
+Accept: application/stream+json
+
+The item arrived on schedule, but it was broken and didn’t function properly. What is the sentiment of this sentence?
+
+###
+
+POST http://localhost:8080/multi-step
+Accept: application/stream+json
+
+At a summer art camp, each of the 15 young artists receives 3 paintbrushes to use for their projects. The brushes are neatly organized by the instructors before the first day of camp. The instructors want to make sure they’ve prepared enough paintbrushes for everyone. How many paintbrushes are there in total for all the students?
+
+###
+
+POST http://localhost:8080/travel-assistant
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "Plan a 7-day family holiday in Turkey. Recommend 2-3 regions and, for each, 2 family-friendly hotels with a short justification.",
+  "context": "Family of 4: two adults and two children aged 6 and 10. Travelling from Warsaw, 12-19 July 2026. Accommodation budget: about 12,000 PLN for the whole stay. Preferences: all-inclusive, sandy beach with a shallow entry to the sea, pool and kids' club, airport transfer under 1 hour. We would like 1-2 day trips to cultural or historical sites. Avoid party resorts and nightlife areas."
+}
+
+###
+
+POST http://localhost:8080/chat-with-advisors
+Content-Type: application/json
+
+{
+  "userPromptText": "Say hello in one short sentence."
+}
+
+###
+
+POST http://localhost:8080/chat-with-conversation
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "My name is Luc"
+}
+
+###
+
+POST http://localhost:8080/chat-with-conversation
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "What is my name?"
+}
+
+###
+
+POST http://localhost:8080/chat-with-conversation/1
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "My name is Luc"
+}
+
+###
+
+POST http://localhost:8080/chat-with-conversation/1
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "What is my name?"
+}
+
+###
+
+GET http://localhost:8080/get-chat-conversation/1
+Accept: application/stream+json
+Content-Type: application/json
+
+###
+
+DELETE http://localhost:8080/delete-chat-conversation/1
+Accept: application/stream+json
+Content-Type: application/json
+
+###
+
+POST http://localhost:8080/chat-with-tools/1
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "What time is it now?"
+}
+
+###
+
+POST http://localhost:8080/chat-with-tools/1
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "What time is it in Tokio?"
+}
+
+###
+
+POST http://localhost:8080/chat-with-tools/1
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "Calculate 2 to the power od 2"
+}
+
+###
+
+POST http://localhost:8080/text-to-speech
+Content-Type: application/json
+
+{
+  "userPromptText": "Spring AI is great"
+}
+
+###
+
+POST http://localhost:8080/audio-transcription
+Accept: application/json
+
+###
+
+POST http://localhost:8080/image-generation
+Content-Type: application/json
+
+{
+  "userPromptText": "A futuristic city with flying cars and neon lights, cyberpunk style"
+}
+
+###
+
+POST http://localhost:8080/image-description
+Content-Type: application/json
+
+{
+  "userPromptText": "Can you explain what you see in the following image"
+}
+
+###
+
+POST http://localhost:8600/mcp-tools
+
+###
+
+POST http://localhost:8600/mcp-client
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "Kto wygrał US open 2025? Poszukaj w sieci"
+}
+
+###
+
+POST http://localhost:8080/mcp-tools
+
+###
+
+POST http://localhost:8080/mcp-client/1
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "How many days are left until 2026-12-24?"
+}
+
+###
+
+POST http://localhost:8080/mcp-client/1
+Accept: application/stream+json
+Content-Type: application/json
+
+{
+  "userPromptText": "Jaki jest aktualny kurs eur/pln w nbp?"
+}
+
+###
+
+POST http://localhost:8080/init-pgvector
+Content-Type: application/json
+
+###
+
+POST http://localhost:8080/basic-rag-query?storeType=pgvector
+Content-Type: application/json
+
+{
+  "userPromptText": "What books about microservices do you recommend? Return title and author"
+}
+
+###
+
+POST http://localhost:8080/rag-query-expander?storeType=pgvector
+Content-Type: application/json
+
+{
+  "userPromptText": "Jakie książki polecsz pod kątem devops"
+}
+
+###
+
+POST http://localhost:8080/rag-rewrite-query?storeType=pgvector
+Content-Type: application/json
+
+{
+  "userPromptText": "Jakie książki polecsz pod kątem devops"
+}
+
+###
+
+POST http://localhost:8080/rag-filter-by-metadata?year=2015&genre=Programming
+Content-Type: application/json
+
+{
+  "userPromptText": "Compare those books"
+}
+
+###
+
+POST http://localhost:8080/rag-debug
+Content-Type: application/json
+
+{
+  "userPromptText": "Compare those books"
+}
+
+###
+
+POST http://localhost:8080/rag-full-pipeline?keepTopDocuments=1
+Content-Type: application/json
+
+{
+  "userPromptText": "Which books should I read about software architecture and microservices?"
+}
+
+###
+
+POST http://localhost:8080/rag-full-pipeline?allowEmptyContext=false
+Content-Type: application/json
+
+{
+  "userPromptText": "What is the best recipe for Italian pizza?"
+}
+
+###
+
+GET http://localhost:8080/read-markdown
+
+###
+
+GET http://localhost:8080/split?chunkSize=40
+
+###
+
+GET http://localhost:8080/enrich
+
+###
+
+POST http://localhost:8080/dump?fileName=target/etl-dump.txt
+
+###
+
+POST http://localhost:8080/ingest?chunkSize=100

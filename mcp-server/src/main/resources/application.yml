@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: mcp-server
+  main:
+    banner-mode: off
+    # stdio is the transport, so the process must not start a web server and must not print
+    # anything to stdout that is not an MCP frame.
+    web-application-type: none
+  ai:
+    mcp:
+      server:
+        name: time-server
+        version: 1.0.0
+        # SYNC exposes blocking handler methods; ASYNC exposes reactive ones.
+        type: sync
+        # Spawned over standard input/output by the client
+        stdio: true
+
+logging:
+  threshold:
+    console: OFF
+  file:
+    name: ./mcp.logs
+# Any log line on the console would corrupt the stdio protocol frames
+
+---
+# Run with --spring.profiles.active=http to serve the same capabilities over streamable HTTP.
+# STREAMABLE keeps a session per client; STATELESS handles each request independently, which is
+# what you want behind a load balancer. SSE is the older, now legacy, HTTP transport.
+spring:
+  config:
+    activate:
+      on-profile: http
+  main:
+    banner-mode: console
+    web-application-type: servlet
+  ai:
+    mcp:
+      server:
+        stdio: false
+        protocol: STREAMABLE
+        streamable-http:
+          mcp-endpoint: /mcp
+server:
+  port: 8090
+logging:
+  threshold:
+    console: TRACE
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level %logger{20} - %msg%n"
