@@ -83,8 +83,6 @@ public class AppConfig {
     public McpClientCustomizer<HttpClientStreamableHttpTransport.Builder> mcpSearchBearerToken(@Value("${mcp-search.token:}") String token) {
         return (name, builder) -> {
             if ("mcp-search".equals(name)) {
-                // serwer obsluguje najwyzej 2025-06-18; bez tego GET na strumien SSE wysyla 2025-11-25 i dostaje 400
-                builder.supportedProtocolVersions(List.of("2025-06-18"));
                 if (!token.isBlank()) {
                     builder.requestBuilder(HttpRequest.newBuilder().header("Authorization", "Bearer " + token));
                 }

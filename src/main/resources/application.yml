@@ -25,7 +25,7 @@ spring:
 #        temperature: 0.1
 
       base-url: https://ai.klasawchmurze.pl
-      api-key: ${LLM_API_KE:sk-}
+      api-key: ${LLM_API_KEY}
       chat:
       #  Nazwa w API	Model	Silnik	Kiedy
       #  qwen3.8-27b	Qwen3.8-27B UD-Q5_K_M	llama.cpp	gęsty, najlepsza jakość rozumowania i kodu, obraz
@@ -44,7 +44,7 @@ spring:
       #  embed-qwen	Qwen3-Embedding-0.6B (1024 wym.)	llama.cpp	embeddingi; domyślny do RAG, dobry dla polskiego
       #  embed-qwen-4b	Qwen3-Embedding-4B Q8 (2560 wym.)	llama.cpp	mocniejsze embeddingi wielojęzyczne
       #  embed-bge-m3	bge-m3 Q8 (1024 wym., 8k kontekstu)	llama.cpp	długie chunki RAG
-        model: deepseek-v4-flash  #${LLM_MODEL:qwen3-30b-a3b}
+        model: qwen3.8-27b
         reasoning-effort: none
         max-tokens: 4096
         temperature: 0.2
@@ -137,4 +137,4 @@ logging:
     pl.training.springai.advisor: DEBUG
     io.modelcontextprotocol: DEBUG
 mcp-search:
-  token: ${MCP_SEARCH_TOKEN}
+  token: ${MCP_TOKEN}

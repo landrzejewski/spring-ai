@@ -211,16 +211,16 @@ Content-Type: application/json
 
 ###
 
-POST http://localhost:8600/mcp-tools
+POST http://localhost:8080/mcp-tools
 
 ###
 
-POST http://localhost:8600/mcp-client
+POST http://localhost:8080/mcp-client/1
 Accept: application/stream+json
 Content-Type: application/json
 
 {
-  "userPromptText": "Kto wygrał US open 2025? Poszukaj w sieci"
+  "userPromptText": "Kto wygrał US open 2026? Poszukaj w sieci"
 }
 
 ###
