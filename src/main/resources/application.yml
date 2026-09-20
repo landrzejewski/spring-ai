@@ -25,15 +25,26 @@ spring:
 #        temperature: 0.1
 
       base-url: https://ai.klasawchmurze.pl
-      api-key: ${LLM_API_KEY}
+      api-key: ${LLM_API_KE:sk-}
       chat:
-        # Nazwy modeli z litellm-config.yaml:
-        #   qwen38-27b     - kodowanie, najlepsza jakosc w VRAM
-        #   qwen3-30b-a3b  - najszybszy (390 t/s), 64k kontekstu
-        #   glm-4.7-flash  - agenty, narzedzia, wyszukiwanie
-        #   qwen3-32b      - gesty, rozumowanie
-        #   gemma-4-31b    - multimodalny (obrazy)
-        model: ${LLM_MODEL:qwen3-30b-a3b}
+      #  Nazwa w API	Model	Silnik	Kiedy
+      #  qwen3.8-27b	Qwen3.8-27B UD-Q5_K_M	llama.cpp	gęsty, najlepsza jakość rozumowania i kodu, obraz
+      #  gemma-4-31b	Gemma 4 31B QAT Q4_K_XL	llama.cpp	ogólny, obrazy, Apache 2.0
+      #  glm-4.7-flash	GLM-4.7-Flash 30B-A3B Q5	llama.cpp	szybki MoE mieszczący się w VRAM; agenty, narzędzia, wyszukiwanie
+      #  qwen3.6-35b-a3b	Qwen3.6-35B-A3B NVFP4	FreeToken	szybki MoE, obraz, 256k kontekstu
+      #  qwen3.8-flash-next	Qwen3.8-Flash-Next 180B MoE NVFP4 (126 GB)	FreeToken	najnowszy Qwen, obraz, 256k; eksperci w RAM
+      #  minimax-m2.7	MiniMax-M2.7 229B MoE NVFP4 (131 GB)	FreeToken	kod, agenci, tylko tekst; licencja niekomercyjna
+      #  deepseek-v4-flash	DeepSeek-V4-Flash 291B MoE FP8 (156 GB)	FreeToken	rozumowanie, tylko tekst; eksperci zajmują prawie cały RAM
+      #  qwen3.5-4b / qwen3.5-4b-q4	Qwen3.5-4B Q8 / Q4	llama.cpp	mały; najlepszy tool calling w swojej klasie, obraz (Q8); para do demo kwantyzacji
+      #  qwen3.5-9b	Qwen3.5-9B Q4	llama.cpp	średni; myślenie, kod, obraz
+      #  gemma-4-e2b	Gemma 4 E2B QAT Q4	llama.cpp	„klasa telefon” — pokaz granic małych modeli
+      #  gemma-4-e4b	Gemma 4 E4B QAT Q4	llama.cpp	„klasa laptop”, obraz
+      #  gemma-4-12b	Gemma 4 12B QAT Q4	llama.cpp	złoty środek, obraz
+      #  qwen3.5-0.8b	Qwen3.5-0.8B Q8	llama.cpp	model zadaniowy Open WebUI (tytuły, pytania nawiązujące) — nie do czatu
+      #  embed-qwen	Qwen3-Embedding-0.6B (1024 wym.)	llama.cpp	embeddingi; domyślny do RAG, dobry dla polskiego
+      #  embed-qwen-4b	Qwen3-Embedding-4B Q8 (2560 wym.)	llama.cpp	mocniejsze embeddingi wielojęzyczne
+      #  embed-bge-m3	bge-m3 Q8 (1024 wym., 8k kontekstu)	llama.cpp	długie chunki RAG
+        model: deepseek-v4-flash  #${LLM_MODEL:qwen3-30b-a3b}
         reasoning-effort: none
         max-tokens: 4096
         temperature: 0.2
@@ -72,9 +83,9 @@ spring:
 #          servers-configuration: classpath:mcp-servers-config.json
         streamable-http:
           connections:
-            mcp-server:
-              url: http://localhost:8090
-              endpoint: /mcp
+#            mcp-server:
+#              url: http://localhost:8090
+#              endpoint: /mcp
             mcp-search:
               url: ${MCP_SEARCH_URL:https://mcp-search.klasawchmurze.pl}
               endpoint: /mcp
