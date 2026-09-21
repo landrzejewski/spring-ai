@@ -233,9 +233,9 @@ public class ChatController {
     @PostMapping("chat-with-conversation")
     public Flux<String> chatWithConversation(@RequestBody PromptRequest promptRequest) {
         var summary = getMessagesSummary();
-        System.out.println("\n******************************************");
-        System.out.printf(summary);
         System.out.println("******************************************");
+        System.out.printf(summary);
+        System.out.println("\n******************************************");
         messages.add(new UserMessage(promptRequest.userPromptText()));
         return chatClient
                 .prompt()
@@ -302,7 +302,7 @@ public class ChatController {
         // var callbacks = ToolCallbacks.from(new DateTimeTool());
         var callbacks = FunctionToolCallback.builder("power", new PowerTool())
                 // .description("Calculates the square of a number (value * value)")
-                .inputType(DoubleValue.class)
+                .inputType(Double.class)
                 .build();
 
         return memoryChatClient.prompt()

@@ -138,3 +138,6 @@ logging:
     io.modelcontextprotocol: DEBUG
 mcp-search:
   token: ${MCP_TOKEN}
+
+
+# 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
