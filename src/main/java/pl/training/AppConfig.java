@@ -76,7 +76,7 @@ public class AppConfig {
     @Primary
     @Bean
     public ModerationModel moderationModel(OllamaChatModel chatModel) {
-        return new pl.training.moderation.ModerationModel(chatModel, SafetyAdvisor.DEFAULT_MODEL);
+        return new pl.training.moderation.ModerationModel(chatModel, "speakleash/bielik-11b-v2.3-instruct:Q4_K_M");
     }
 
     @Bean
