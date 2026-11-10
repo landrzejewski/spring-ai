@@ -5,7 +5,7 @@ spring:
       base-url: https://ai.klasawchmurze.pl
       api-key: ${LLM_API_KEY:sk-}
       chat:
-        model: ${LLM_MODEL:ft-qwen3.6-35b-a3b}
+        model: ${LLM_MODEL:qwen3.8-27b}
         reasoning-effort: none
         max-tokens: 4096
         temperature: 0.2
